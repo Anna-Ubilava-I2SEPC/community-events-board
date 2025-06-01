@@ -3,9 +3,10 @@
 ## 👥 Team Information
 
 - **Team Members**:  
-  David Ramishvili - role1  
-  Nana Kvirkvelia - role2  
-  Anna Ubilava - role3
+   David Ramishvili  
+   Nana Kvirkvelia  
+   Anna Ubilava  
+  tasks are equally distributed with a cross-functional task division strategy
 
 - **Selected Base Project**: Community Events Board
 
