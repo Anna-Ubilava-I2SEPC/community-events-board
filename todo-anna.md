@@ -8,7 +8,7 @@
 
 - [x] 3.1 – Create `EventForm` component with required fields (title, date, location, description)
 - [x] 3.2 – Manage form state using `useState`
-- [ ] 3.3 – Add validation to form fields (required fields, ISO date format)
+- [x] 3.3 – Add validation to form fields (required fields, ISO date format)
 
 ### Task 5 – Connect Form to Backend
 

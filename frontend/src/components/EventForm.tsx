@@ -1,17 +1,45 @@
 // src/components/EventForm.tsx
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 const EventForm: React.FC = () => {
-  const [title, setTitle] = useState('');
-  const [date, setDate] = useState('');
-  const [location, setLocation] = useState('');
-  const [description, setDescription] = useState('');
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState("");
+  const [location, setLocation] = useState("");
+  const [description, setDescription] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Just log for now (Task 3.4 will clear and validate)
-    console.log({ title, date, location, description });
+    // Basic required field check
+    if (!title.trim() || !date || !location.trim()) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
+    // Optional: validate ISO format & future date
+    const inputDate = new Date(date);
+    const now = new Date();
+
+    if (isNaN(inputDate.getTime())) {
+      alert("Please enter a valid date.");
+      return;
+    }
+
+    if (inputDate < now) {
+      alert("Date must be in the future.");
+      return;
+    }
+
+    // If all good, log the event (you'll wire POST in 5.1)
+    console.log({
+      title,
+      date,
+      location,
+      description,
+    });
+
+    // Optional: show message
+    alert("Event validated! Ready to submit.");
   };
 
   return (
