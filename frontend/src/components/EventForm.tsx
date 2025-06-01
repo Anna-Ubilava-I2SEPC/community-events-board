@@ -7,7 +7,7 @@ const EventForm: React.FC = () => {
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Basic required field check
@@ -38,8 +38,35 @@ const EventForm: React.FC = () => {
       description,
     });
 
-    // Optional: show message
-    alert("Event validated! Ready to submit.");
+    const newEvent = {
+      title,
+      date,
+      location,
+      description,
+    };
+
+    try {
+      const response = await fetch("http://localhost:4000/events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newEvent),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit event");
+      }
+
+      alert("Event submitted successfully!");
+      setTitle("");
+      setDate("");
+      setLocation("");
+      setDescription("");
+    } catch (error) {
+      console.error("Error submitting event:", error);
+      alert("There was a problem submitting your event.");
+    }
   };
 
   return (
