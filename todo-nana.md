@@ -3,7 +3,7 @@
 ### Task 2 – Backend Support
 
 - [x] 2.3 – Set up TypeScript config (`tsconfig.json`), scripts, and backend folder structure
-- [ ] 2.4 – Test backend server with a sample route (e.g., `/ping`)
+- [x] 2.4 – Test backend server with a sample route (e.g., `/ping`)
 
 ### Task 3 – Form Finalization
 
