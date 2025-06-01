@@ -6,8 +6,8 @@
 
 ### 🟢 Task 3 – Create Static Event Form
 
-- [ ] 3.1 – Create `EventForm` component with required fields (title, date, location, description)
-- [ ] 3.2 – Manage form state using `useState`
+- [x] 3.1 – Create `EventForm` component with required fields (title, date, location, description)
+- [x] 3.2 – Manage form state using `useState`
 
 ### 🟢 Task 5 – Connect Form to Backend
 

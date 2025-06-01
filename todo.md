@@ -24,8 +24,8 @@ This TODO list reflects the current status of tasks based on the initial 5-featu
 
 ## 🟢 Task 3: Create static form in React for submitting an event
 
-- [ ] 3.1 – Create `EventForm` component with fields: title, date, location, description
-- [ ] 3.2 – Handle form input using `useState`
+- [x] 3.1 – Create `EventForm` component with fields: title, date, location, description
+- [x] 3.2 – Handle form input using `useState`
 
 - [ ] 3.3 – Add basic validation to form (required fields, ISO date format)
 - [ ] 3.4 – Finalize `onSubmit` to log data and clear form on success
