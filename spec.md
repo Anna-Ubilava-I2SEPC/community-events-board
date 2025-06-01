@@ -100,6 +100,9 @@ export interface Event {
 4. Implement basic POST and GET endpoints in backend
 5. Connect frontend form to backend using fetch and display events list
 
+- 5.1 wire form to backend
+- 5.2 Fetch+ render events (view list)
+
 ---
 
 ### 8. Potential Future Enhanced Features
