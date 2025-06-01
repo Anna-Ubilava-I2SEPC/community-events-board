@@ -1,6 +1,6 @@
 # ✅ Project TODO – Community Events Board
 
-This TODO list reflects the current status of tasks based on the initial 5-feature breakdown. These tasks are divided among 3 team members in their own todo-name.md files.
+The following tasks are divided among 3 team members in their own todo-name.md files.
 
 ---
 
