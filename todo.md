@@ -14,7 +14,7 @@ The following tasks are divided among 3 team members in their own todo-name.md f
 
 ## Task 2: Set up backend server with Node.js + TypeScript + Express
 
-- [ ] 2.1 – Initialize Node.js project with TypeScript (`npm init`, `tsconfig.json`, create `src/`)
+- [x] 2.1 – Initialize Node.js project with TypeScript (`npm init`, `tsconfig.json`, create `src/`)
 - [ ] 2.2 – Set up Express app and basic `/ping` route
 
 - [ ] 2.3 – Create backend folder structure, configure `tsconfig.json`, `nodemon`, and scripts
