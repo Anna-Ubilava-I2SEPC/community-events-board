@@ -1,6 +1,6 @@
 # Anna's To-Do List
 
-## Completed
+## Task 1
 
 - [x] Task 1: Set up frontend project with React + TypeScript
 
