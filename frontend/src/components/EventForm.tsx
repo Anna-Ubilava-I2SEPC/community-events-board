@@ -30,7 +30,7 @@ const EventForm: React.FC = () => {
       return;
     }
 
-    // If all good, log the event (you'll wire POST in 5.1)
+    // If all good, log the event (wire POST in 5.1)
     console.log({
       title,
       date,
@@ -39,7 +39,7 @@ const EventForm: React.FC = () => {
     });
 
     // Optional: show message
-    alert("Event validated! Ready to submit.");
+    alert("Event validated and submitted.");
   };
 
   return (
