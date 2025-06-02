@@ -10,6 +10,8 @@ const EventForm: React.FC<EventFormProps> = ({ onEventAdded }) => {
   const [date, setDate] = useState("");
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const clearForm = () => {
     setTitle("");
@@ -57,6 +59,7 @@ const EventForm: React.FC<EventFormProps> = ({ onEventAdded }) => {
     };
 
     try {
+      setIsSubmitting(true);
       const response = await fetch("http://localhost:4000/events", {
         method: "POST",
         headers: {
@@ -69,16 +72,27 @@ const EventForm: React.FC<EventFormProps> = ({ onEventAdded }) => {
         throw new Error("Failed to submit event");
       }
 
-      alert("Event submitted successfully!");
+      // Show success state
+      setSubmitSuccess(true);
+      
       // Clear form on successful submission
       clearForm();
+      
       // Notify parent component that an event was added
       if (onEventAdded) {
         onEventAdded();
       }
+
+      // Reset success state after 2 seconds
+      setTimeout(() => {
+        setSubmitSuccess(false);
+      }, 2000);
+      
     } catch (error) {
       console.error("Error submitting event:", error);
       alert("There was a problem submitting your event.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -125,10 +139,17 @@ const EventForm: React.FC<EventFormProps> = ({ onEventAdded }) => {
       </label>
 
       <div className="buttons">
-        <button type="submit">Submit Event</button>
+        <button 
+          type="submit" 
+          disabled={isSubmitting}
+          className={submitSuccess ? "success" : ""}
+        >
+          {isSubmitting ? "Submitting..." : submitSuccess ? "✓ Success!" : "Submit Event"}
+        </button>
         <button
           type="button"
           onClick={clearForm}
+          disabled={isSubmitting}
         >
           Clear Form
         </button>
