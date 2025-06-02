@@ -9,8 +9,8 @@
 
 ### Task 4 – Backend API Endpoints
 
-- [ ] 4.1 – Define `Event` interface/model in a shared or backend-specific file
-- [ ] 4.2 – Implement `GET /events` route using in-memory array
+- [x] 4.1 – Define `Event` interface/model in a shared or backend-specific file
+- [x] 4.2 – Implement `GET /events` route using in-memory array
 
 ### Task 5 – Connect Form to Backend
 

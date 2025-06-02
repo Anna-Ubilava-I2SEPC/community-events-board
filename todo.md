@@ -34,8 +34,8 @@ The following tasks are divided among 3 team members in their own todo-name.md f
 
 ## Task 4: Implement basic POST and GET endpoints in backend
 
-- [ ] 4.1 – Define `Event` interface/model in TypeScript
-- [ ] 4.2 – Implement `GET /events` to return events from in-memory store
+- [x] 4.1 – Define `Event` interface/model in TypeScript
+- [x] 4.2 – Implement `GET /events` to return events from in-memory store
 - [ ] 4.3 – Implement `POST /events` to add new event with validation
 - [ ] 4.4 – Test both endpoints using Postman or curl
 
