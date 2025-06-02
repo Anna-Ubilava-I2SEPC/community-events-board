@@ -7,6 +7,13 @@ const EventForm: React.FC = () => {
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
 
+  const clearForm = () => {
+    setTitle("");
+    setDate("");
+    setLocation("");
+    setDescription("");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -59,10 +66,8 @@ const EventForm: React.FC = () => {
       }
 
       alert("Event submitted successfully!");
-      setTitle("");
-      setDate("");
-      setLocation("");
-      setDescription("");
+      // Clear form on successful submission
+      clearForm();
     } catch (error) {
       console.error("Error submitting event:", error);
       alert("There was a problem submitting your event.");
@@ -115,12 +120,7 @@ const EventForm: React.FC = () => {
         <button type="submit">Submit Event</button>
         <button
           type="button"
-          onClick={() => {
-            setTitle("");
-            setDate("");
-            setLocation("");
-            setDescription("");
-          }}
+          onClick={clearForm}
         >
           Clear Form
         </button>
