@@ -46,7 +46,7 @@ The following tasks are divided among 3 team members in their own todo-name.md f
 - [ ] 5.1 – Connect `EventForm` to `POST /events` with `fetch`
 - [ ] Clear form and show result on success
 
-- [ ] 5.2 – Create `EventList` component to display events
+- [x] 5.2 – Create `EventList` component to display events
 - [ ] 5.3 – Fetch events via `GET /events` and display them
 - [ ] 5.4 – Apply minimal styling to event cards or list
 
