@@ -7,29 +7,39 @@ interface EventListProps {
 
 const EventList: React.FC<EventListProps> = ({ events }) => {
   return (
-    <div>
+    <div className="event-list">
       <h2>Upcoming Events</h2>
-      <ul style={{ listStyle: "none", padding: 0 }}>
-        {events.map((event) => (
-          <li
-            key={event.id}
-            style={{
-              border: "1px solid #ccc",
-              padding: "1rem",
-              marginBottom: "1rem",
-            }}
-          >
-            <h3>{event.title}</h3>
-            <p>
-              <strong>Date:</strong> {new Date(event.date).toLocaleString()}
-            </p>
-            <p>
-              <strong>Location:</strong> {event.location}
-            </p>
-            {event.description && <p>{event.description}</p>}
-          </li>
-        ))}
-      </ul>
+      {events.length === 0 ? (
+        <div className="no-events">
+          <p>No events found. Be the first to add one!</p>
+        </div>
+      ) : (
+        <div className="events-grid">
+          {events.map((event) => (
+            <div key={event.id} className="event-card">
+              <h3>{event.title}</h3>
+              <div className="event-details">
+                <p className="event-date">
+                  <strong>📅 Date:</strong> {new Date(event.date).toLocaleDateString("en-US", {
+                    weekday: "long",
+                    year: "numeric", 
+                    month: "long",
+                    day: "numeric"
+                  })}
+                </p>
+                <p className="event-location">
+                  <strong>📍 Location:</strong> {event.location}
+                </p>
+                {event.description && (
+                  <p className="event-description">
+                    <strong>ℹ️ Description:</strong> {event.description}
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
