@@ -84,7 +84,20 @@ const EventForm: React.FC = () => {
         />
       </label>
 
-      <button type="submit">Submit Event</button>
+      <div className="buttons">
+        <button type="submit">Submit Event</button>
+        <button
+          type="button"
+          onClick={() => {
+            setTitle("");
+            setDate("");
+            setLocation("");
+            setDescription("");
+          }}
+        >
+          Clear Form
+        </button>
+      </div>
     </form>
   );
 };

@@ -1,13 +1,36 @@
+/* Reset & base */
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f7f9fc;
+  color: #333;
+}
+
+h1,
+h2 {
+  text-align: center;
+  color: #2b3a55;
+}
+
+.App {
+  padding: 2rem;
+}
+
+/* Form styling */
 form {
+  background-color: #fff;
+  padding: 2rem;
+  margin: 2rem auto;
+  max-width: 500px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  max-width: 400px;
-  margin: 2rem auto;
 }
 
 label {
-  font-weight: bold;
+  font-weight: 500;
   display: flex;
   flex-direction: column;
 }
@@ -15,10 +38,69 @@ label {
 input,
 textarea {
   padding: 0.5rem;
-  border-radius: 3px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  transition: border-color 0.2s;
+}
+
+input:focus,
+textarea:focus {
+  border-color: #2b3a55;
+  outline: none;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.buttons{
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+
 }
 
 button {
-  padding: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  background-color: #2b3a55;
+  color: white;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #3e4e70;
+}
+
+/* Event list styles */
+.event-list {
+  max-width: 800px;
+  margin: 2rem auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.event-card {
+  background-color: #fff;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid #2b3a55;
+}
+
+.event-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+}
+
+.event-card p {
+  margin: 0.25rem 0;
+  color: #555;
 }
