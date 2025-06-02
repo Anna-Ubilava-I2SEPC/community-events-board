@@ -1,7 +1,11 @@
 // src/components/EventForm.tsx
 import React, { useState } from "react";
 
-const EventForm: React.FC = () => {
+interface EventFormProps {
+  onEventAdded?: () => void;
+}
+
+const EventForm: React.FC<EventFormProps> = ({ onEventAdded }) => {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [location, setLocation] = useState("");
@@ -68,6 +72,10 @@ const EventForm: React.FC = () => {
       alert("Event submitted successfully!");
       // Clear form on successful submission
       clearForm();
+      // Notify parent component that an event was added
+      if (onEventAdded) {
+        onEventAdded();
+      }
     } catch (error) {
       console.error("Error submitting event:", error);
       alert("There was a problem submitting your event.");
