@@ -14,4 +14,4 @@
 
 ### Task 5 – Connect Form to Backend
 
-- [ ] 5.2 – Create `EventList` component and define display format (card or list)
+- [x] 5.2 – Create `EventList` component and define display format (card or list)
