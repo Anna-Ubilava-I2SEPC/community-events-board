@@ -154,4 +154,32 @@ router.put("/:id", (req, res) => {
   }
 });
 
+// DELETE /events/:id - Delete an event
+router.delete("/:id", (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the event
+    const eventIndex = events.findIndex(event => event.id === id);
+    if (eventIndex === -1) {
+      return res.status(404).json({
+        error: "Event not found"
+      });
+    }
+
+    // Remove the event
+    events.splice(eventIndex, 1);
+
+    // Return success response
+    res.status(200).json({
+      message: "Event deleted successfully"
+    });
+  } catch (error) {
+    console.error("Error deleting event:", error);
+    res.status(500).json({
+      error: "Internal server error while deleting event."
+    });
+  }
+});
+
 export default router;

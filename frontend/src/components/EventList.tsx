@@ -42,6 +42,29 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
     }
   };
 
+  const handleDeleteClick = async (eventId: string) => {
+    if (!window.confirm("Are you sure you want to delete this event?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:4000/events/${eventId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete event");
+      }
+
+      if (onEventUpdated) {
+        onEventUpdated();
+      }
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      alert("There was a problem deleting the event.");
+    }
+  };
+
   return (
     <div className="event-list">
       <h2>Upcoming Events</h2>
@@ -80,12 +103,20 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
                         <strong>ℹ️ Description:</strong> {event.description}
                       </p>
                     )}
-                    <button 
-                      className="edit-button"
-                      onClick={() => handleEditClick(event)}
-                    >
-                      Edit Event
-                    </button>
+                    <div className="event-actions">
+                      <button 
+                        className="edit-button"
+                        onClick={() => handleEditClick(event)}
+                      >
+                        Edit Event
+                      </button>
+                      <button 
+                        className="delete-button"
+                        onClick={() => handleDeleteClick(event.id)}
+                      >
+                        Delete Event
+                      </button>
+                    </div>
                   </div>
                 </>
               )}
