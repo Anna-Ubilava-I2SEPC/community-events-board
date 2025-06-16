@@ -28,7 +28,15 @@ function App() {
         throw new Error("Failed to fetch events");
       }
       
-      const eventsData = await response.json();
+      let eventsData = await response.json();
+      // Normalize id field
+      eventsData = eventsData.map((event: any) => ({
+        ...event,
+        id: event._id || event.id,
+        categoryIds: event.categoryIds?.map((cat: any) =>
+          typeof cat === 'object' && cat !== null ? { ...cat, id: cat._id || cat.id } : cat
+        ) || [],
+      }));
       setEvents(eventsData);
     } catch (error) {
       console.error("Error fetching events:", error);
@@ -47,7 +55,9 @@ function App() {
         throw new Error("Failed to fetch categories");
       }
       
-      const categoriesData = await response.json();
+      let categoriesData = await response.json();
+      // Normalize id field
+      categoriesData = categoriesData.map((cat: any) => ({ ...cat, id: cat._id || cat.id }));
       setCategories(categoriesData);
     } catch (error) {
       console.error("Error fetching categories:", error);

@@ -1,10 +1,21 @@
-export interface Event {
-  id: string; // UUID (string)
+import mongoose, { Document, Schema, Types } from 'mongoose';
+
+export interface IEvent extends Document {
   title: string;
-  date: string; // ISO format date string
+  date: string;
   location: string;
-  description?: string; // Optional
-  categoryIds: string[]; // Array of category IDs
+  description?: string;
+  categoryIds: Types.ObjectId[];
+  imageUrl?: string;
 }
 
-export const events: Event[] = [];
+const eventSchema = new Schema<IEvent>({
+  title: { type: String, required: true, trim: true },
+  date: { type: String, required: true },
+  location: { type: String, required: true, trim: true },
+  description: { type: String, trim: true },
+  categoryIds: [{ type: Schema.Types.ObjectId, ref: 'Category' }],
+  imageUrl: { type: String }
+});
+
+export const Event = mongoose.model<IEvent>('Event', eventSchema);

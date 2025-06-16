@@ -20,12 +20,20 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
 
   const handleEditSubmit = async (updatedEvent: Event) => {
     try {
+      const formData = new FormData();
+      formData.append("title", updatedEvent.title);
+      formData.append("date", updatedEvent.date);
+      formData.append("location", updatedEvent.location);
+      formData.append("description", updatedEvent.description || "");
+      formData.append("categoryIds", JSON.stringify(
+        updatedEvent.categoryIds.map(cat => typeof cat === 'object' && cat !== null && 'id' in cat ? cat.id : cat)
+      ));
+      // If image is present in updatedEvent, append it (for now, skip as EventForm does not support editing image)
+      // if (updatedEvent.image) formData.append("image", updatedEvent.image);
+
       const response = await fetch(`http://localhost:4000/events/${updatedEvent.id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedEvent),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -85,6 +93,11 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
                 />
               ) : (
                 <>
+                  {event.imageUrl && (
+                    <div className="event-image-wrapper">
+                      <img src={`http://localhost:4000${event.imageUrl}`} alt={event.title} className="event-image" />
+                    </div>
+                  )}
                   <h3>{event.title}</h3>
                   <div className="event-details">
                     <p className="event-date">
@@ -102,6 +115,32 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
                       <p className="event-description">
                         <strong>ℹ️ Description:</strong> {event.description}
                       </p>
+                    )}
+                    {/* Show categories if available */}
+                    {Array.isArray(event.categoryIds) && event.categoryIds.length > 0 && (
+                      <div className="event-categories-list">
+                        <strong>🏷️ Categories:</strong>
+                        <div className="event-category-badges">
+                          {event.categoryIds.map((cat, idx) => {
+                            let name = '';
+                            let key = '';
+                            if (typeof cat === 'object' && cat !== null) {
+                              name = (cat as any).name || '';
+                              key = (cat as any).id || (cat as any)._id || idx.toString();
+                            } else if (typeof cat === 'string') {
+                              name = cat;
+                              key = cat;
+                            } else {
+                              key = idx.toString();
+                            }
+                            return (
+                              <span key={key} className="event-category-badge">
+                                {name}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
                     )}
                     <div className="event-actions">
                       <button 

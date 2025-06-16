@@ -1,140 +1,63 @@
-import { Router } from "express";
-import { v4 as uuidv4 } from "uuid";
-import { categories, Category } from "../models/category";
+import { Router, RequestHandler } from "express";
+import { Category } from "../models/category";
 
 const router = Router();
 
 // GET /categories - Get all categories
-router.get("/", (_req, res) => {
-  res.status(200).json(categories);
-});
+router.get("/", (async (_req, res) => {
+  try {
+    const categories = await Category.find();
+    res.status(200).json(categories);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch categories" });
+  }
+}) as RequestHandler);
 
 // POST /categories - Create a new category
-router.post("/", (req, res) => {
+router.post("/", (async (req, res) => {
   try {
     const { name, description } = req.body;
-
-    // Basic validation - check required fields
     if (!name) {
-      return res.status(400).json({
-        error: "Missing required field. Name is required."
-      });
+      return res.status(400).json({ error: "Missing required field. Name is required." });
     }
-
-    // Validate that name is a string and not empty
-    if (typeof name !== "string" || name.trim() === "") {
-      return res.status(400).json({
-        error: "Name must be a non-empty string."
-      });
-    }
-
-    // Validate description if provided
-    if (description !== undefined && typeof description !== "string") {
-      return res.status(400).json({
-        error: "Description must be a string."
-      });
-    }
-
-    // Create new category with generated UUID
-    const newCategory: Category = {
-      id: uuidv4(),
-      name: name.trim(),
-      description: description ? description.trim() : undefined
-    };
-
-    // Push to memory (categories array)
-    categories.push(newCategory);
-
-    // Return the created category
-    res.status(201).json(newCategory);
+    const category = new Category({ name: name.trim(), description: description ? description.trim() : undefined });
+    await category.save();
+    res.status(201).json(category);
   } catch (error) {
-    console.error("Error creating category:", error);
-    res.status(500).json({
-      error: "Internal server error while creating category."
-    });
+    res.status(500).json({ error: "Failed to create category" });
   }
-});
+}) as RequestHandler);
 
 // PUT /categories/:id - Update a category
-router.put("/:id", (req, res) => {
+router.put("/:id", (async (req, res) => {
   try {
     const { id } = req.params;
     const { name, description } = req.body;
-
-    // Find the category
-    const categoryIndex = categories.findIndex(category => category.id === id);
-    if (categoryIndex === -1) {
-      return res.status(404).json({
-        error: "Category not found"
-      });
+    const category = await Category.findById(id);
+    if (!category) {
+      return res.status(404).json({ error: "Category not found" });
     }
-
-    // Basic validation - check required fields
-    if (!name) {
-      return res.status(400).json({
-        error: "Missing required field. Name is required."
-      });
-    }
-
-    // Validate that name is a string and not empty
-    if (typeof name !== "string" || name.trim() === "") {
-      return res.status(400).json({
-        error: "Name must be a non-empty string."
-      });
-    }
-
-    // Validate description if provided
-    if (description !== undefined && typeof description !== "string") {
-      return res.status(400).json({
-        error: "Description must be a string."
-      });
-    }
-
-    // Update the category
-    const updatedCategory: Category = {
-      ...categories[categoryIndex],
-      name: name.trim(),
-      description: description ? description.trim() : undefined
-    };
-
-    categories[categoryIndex] = updatedCategory;
-
-    // Return the updated category
-    res.status(200).json(updatedCategory);
+    category.name = name;
+    category.description = description;
+    await category.save();
+    res.status(200).json(category);
   } catch (error) {
-    console.error("Error updating category:", error);
-    res.status(500).json({
-      error: "Internal server error while updating category."
-    });
+    res.status(500).json({ error: "Failed to update category" });
   }
-});
+}) as RequestHandler);
 
 // DELETE /categories/:id - Delete a category
-router.delete("/:id", (req, res) => {
+router.delete("/:id", (async (req, res) => {
   try {
     const { id } = req.params;
-
-    // Find the category
-    const categoryIndex = categories.findIndex(category => category.id === id);
-    if (categoryIndex === -1) {
-      return res.status(404).json({
-        error: "Category not found"
-      });
+    const category = await Category.findByIdAndDelete(id);
+    if (!category) {
+      return res.status(404).json({ error: "Category not found" });
     }
-
-    // Remove the category
-    categories.splice(categoryIndex, 1);
-
-    // Return success response
-    res.status(200).json({
-      message: "Category deleted successfully"
-    });
+    res.status(200).json({ message: "Category deleted successfully" });
   } catch (error) {
-    console.error("Error deleting category:", error);
-    res.status(500).json({
-      error: "Internal server error while deleting category."
-    });
+    res.status(500).json({ error: "Failed to delete category" });
   }
-});
+}) as RequestHandler);
 
 export default router; 

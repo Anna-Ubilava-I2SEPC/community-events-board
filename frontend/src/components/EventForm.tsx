@@ -22,26 +22,37 @@ const EventForm: React.FC<EventFormProps> = ({
   const [date, setDate] = useState(initialEvent?.date ? new Date(initialEvent.date).toISOString().split('T')[0] : "");
   const [location, setLocation] = useState(initialEvent?.location || "");
   const [description, setDescription] = useState(initialEvent?.description || "");
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(initialEvent?.categoryIds || []);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    initialEvent?.categoryIds ? initialEvent.categoryIds.map(cat => {
+      if (typeof cat === 'string') return cat;
+      return cat.id || cat._id || '';
+    }).filter(Boolean) : []
+  );
   const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [image, setImage] = useState<File | null>(null);
 
   useEffect(() => {
     // Fetch categories when component mounts
     const fetchCategories = async () => {
       try {
+        setCategoriesLoading(true);
         const response = await fetch("http://localhost:4000/categories");
         if (!response.ok) {
           throw new Error("Failed to fetch categories");
         }
         const categoriesData = await response.json();
         setCategories(categoriesData);
+        // Sync selectedCategories to only valid IDs
+        setSelectedCategories(prev => prev.filter(id => categoriesData.some((cat: Category) => String(cat.id) === id)));
       } catch (error) {
         console.error("Error fetching categories:", error);
+      } finally {
+        setCategoriesLoading(false);
       }
     };
-
     fetchCategories();
   }, []);
 
@@ -51,6 +62,7 @@ const EventForm: React.FC<EventFormProps> = ({
     setLocation("");
     setDescription("");
     setSelectedCategories([]);
+    setImage(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -76,54 +88,58 @@ const EventForm: React.FC<EventFormProps> = ({
       return;
     }
 
-    const eventData = {
-      ...(initialEvent || {}),
-      title,
-      date,
-      location,
-      description,
-      categoryIds: selectedCategories
-    };
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("date", date);
+    formData.append("location", location);
+    formData.append("description", description);
+    // Ensure categoryIds is properly formatted
+    if (selectedCategories.length > 0) {
+      formData.append("categoryIds", JSON.stringify(selectedCategories));
+    }
+    if (image) {
+      formData.append("image", image);
+    }
 
     try {
       setIsSubmitting(true);
 
       if (isEditing && onSubmit) {
         // Handle edit submission
-        await onSubmit(eventData as Event);
+        const updatedEvent = {
+          ...(initialEvent || {}),
+          title,
+          date,
+          location,
+          description,
+          categoryIds: selectedCategories
+        } as Event;
+        await onSubmit(updatedEvent);
       } else {
         // Handle new event creation
         const response = await fetch("http://localhost:4000/events", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(eventData),
+          body: formData,
         });
 
         if (!response.ok) {
-          throw new Error("Failed to submit event");
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to submit event");
         }
 
         // Show success state
         setSubmitSuccess(true);
-        
-        // Clear form on successful submission
         clearForm();
-        
-        // Notify parent component that an event was added
         if (onEventAdded) {
           onEventAdded();
         }
-
-        // Reset success state after 2 seconds
         setTimeout(() => {
           setSubmitSuccess(false);
         }, 2000);
       }
     } catch (error) {
       console.error("Error submitting event:", error);
-      alert("There was a problem submitting your event.");
+      alert(error instanceof Error ? error.message : "There was a problem submitting your event.");
     } finally {
       setIsSubmitting(false);
     }
@@ -131,10 +147,11 @@ const EventForm: React.FC<EventFormProps> = ({
 
   const handleCategoryChange = (categoryId: string) => {
     setSelectedCategories(prev => {
-      if (prev.includes(categoryId)) {
-        return prev.filter(id => id !== categoryId);
+      const normalizedId = categoryId.toString();
+      if (prev.includes(normalizedId)) {
+        return prev.filter(id => id !== normalizedId);
       } else {
-        return [...prev, categoryId];
+        return [...prev, normalizedId];
       }
     });
   };
@@ -183,18 +200,37 @@ const EventForm: React.FC<EventFormProps> = ({
 
       <label>
         Categories:
-        <div className="category-checkboxes">
-          {categories.map(category => (
-            <label key={category.id} className="category-checkbox">
-              <input
-                type="checkbox"
-                checked={selectedCategories.includes(category.id)}
-                onChange={() => handleCategoryChange(category.id)}
-              />
-              {category.name}
-            </label>
-          ))}
-        </div>
+        {categoriesLoading ? (
+          <div>Loading categories...</div>
+        ) : (
+          <div className="category-checkboxes">
+            {categories.map(category => {
+              const catId = String(category.id || category._id);
+              const checkboxId = `category-checkbox-${catId}`;
+              return (
+                <label key={catId} className="category-checkbox" htmlFor={checkboxId}>
+                  <input
+                    id={checkboxId}
+                    name={checkboxId}
+                    type="checkbox"
+                    checked={selectedCategories.includes(catId)}
+                    onChange={() => handleCategoryChange(catId)}
+                  />
+                  <span style={{ margin: 0, fontWeight: 600 }}>{category.name}</span>
+                </label>
+              );
+            })}
+          </div>
+        )}
+      </label>
+
+      <label>
+        Image:
+        <input
+          type="file"
+          accept="image/*"
+          onChange={e => setImage(e.target.files ? e.target.files[0] : null)}
+        />
       </label>
 
       <div className="buttons">
