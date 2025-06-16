@@ -50,7 +50,7 @@ function App() {
       <EventForm onEventAdded={handleEventAdded} />
       {loading && <p>Loading events...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
-      {!loading && !error && <EventList events={events} />}
+      {!loading && !error && <EventList events={events} onEventUpdated={handleEventAdded} />}
     </div>
   );
 

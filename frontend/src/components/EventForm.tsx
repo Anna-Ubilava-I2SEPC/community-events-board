@@ -1,15 +1,26 @@
 // src/components/EventForm.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import type { Event } from "../types/Event";
 
 interface EventFormProps {
   onEventAdded?: () => void;
+  initialEvent?: Event;
+  onSubmit?: (event: Event) => void;
+  onCancel?: () => void;
+  isEditing?: boolean;
 }
 
-const EventForm: React.FC<EventFormProps> = ({ onEventAdded }) => {
-  const [title, setTitle] = useState("");
-  const [date, setDate] = useState("");
-  const [location, setLocation] = useState("");
-  const [description, setDescription] = useState("");
+const EventForm: React.FC<EventFormProps> = ({ 
+  onEventAdded, 
+  initialEvent, 
+  onSubmit, 
+  onCancel,
+  isEditing = false 
+}) => {
+  const [title, setTitle] = useState(initialEvent?.title || "");
+  const [date, setDate] = useState(initialEvent?.date ? new Date(initialEvent.date).toISOString().split('T')[0] : "");
+  const [location, setLocation] = useState(initialEvent?.location || "");
+  const [description, setDescription] = useState(initialEvent?.description || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
@@ -43,15 +54,8 @@ const EventForm: React.FC<EventFormProps> = ({ onEventAdded }) => {
       return;
     }
 
-    // If all good, log the event (wire POST in 5.1)
-    console.log({
-      title,
-      date,
-      location,
-      description,
-    });
-
-    const newEvent = {
+    const eventData = {
+      ...(initialEvent || {}),
       title,
       date,
       location,
@@ -60,34 +64,40 @@ const EventForm: React.FC<EventFormProps> = ({ onEventAdded }) => {
 
     try {
       setIsSubmitting(true);
-      const response = await fetch("http://localhost:4000/events", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newEvent),
-      });
 
-      if (!response.ok) {
-        throw new Error("Failed to submit event");
+      if (isEditing && onSubmit) {
+        // Handle edit submission
+        await onSubmit(eventData as Event);
+      } else {
+        // Handle new event creation
+        const response = await fetch("http://localhost:4000/events", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(eventData),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to submit event");
+        }
+
+        // Show success state
+        setSubmitSuccess(true);
+        
+        // Clear form on successful submission
+        clearForm();
+        
+        // Notify parent component that an event was added
+        if (onEventAdded) {
+          onEventAdded();
+        }
+
+        // Reset success state after 2 seconds
+        setTimeout(() => {
+          setSubmitSuccess(false);
+        }, 2000);
       }
-
-      // Show success state
-      setSubmitSuccess(true);
-      
-      // Clear form on successful submission
-      clearForm();
-      
-      // Notify parent component that an event was added
-      if (onEventAdded) {
-        onEventAdded();
-      }
-
-      // Reset success state after 2 seconds
-      setTimeout(() => {
-        setSubmitSuccess(false);
-      }, 2000);
-      
     } catch (error) {
       console.error("Error submitting event:", error);
       alert("There was a problem submitting your event.");
@@ -98,7 +108,7 @@ const EventForm: React.FC<EventFormProps> = ({ onEventAdded }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2>Add New Event</h2>
+      <h2>{isEditing ? "Edit Event" : "Add New Event"}</h2>
 
       <label>
         Title*:
@@ -144,15 +154,25 @@ const EventForm: React.FC<EventFormProps> = ({ onEventAdded }) => {
           disabled={isSubmitting}
           className={submitSuccess ? "success" : ""}
         >
-          {isSubmitting ? "Submitting..." : submitSuccess ? "✓ Success!" : "Submit Event"}
+          {isSubmitting ? "Submitting..." : submitSuccess ? "✓ Success!" : isEditing ? "Update Event" : "Submit Event"}
         </button>
-        <button
-          type="button"
-          onClick={clearForm}
-          disabled={isSubmitting}
-        >
-          Clear Form
-        </button>
+        {isEditing ? (
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={clearForm}
+            disabled={isSubmitting}
+          >
+            Clear Form
+          </button>
+        )}
       </div>
     </form>
   );

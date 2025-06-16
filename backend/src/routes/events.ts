@@ -77,4 +77,81 @@ router.post("/", (req, res) => {
   }
 });
 
+// PUT /events/:id - Update an existing event
+router.put("/:id", (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, date, location, description } = req.body;
+
+    // Find the event
+    const eventIndex = events.findIndex(event => event.id === id);
+    if (eventIndex === -1) {
+      return res.status(404).json({
+        error: "Event not found"
+      });
+    }
+
+    // Basic validation - check required fields
+    if (!title || !date || !location) {
+      return res.status(400).json({
+        error: "Missing required fields. Title, date, and location are required."
+      });
+    }
+
+    // Validate that title and location are strings and not empty
+    if (typeof title !== "string" || title.trim() === "") {
+      return res.status(400).json({
+        error: "Title must be a non-empty string."
+      });
+    }
+
+    if (typeof location !== "string" || location.trim() === "") {
+      return res.status(400).json({
+        error: "Location must be a non-empty string."
+      });
+    }
+
+    // Validate date format and that it's in the future
+    const eventDate = new Date(date);
+    if (isNaN(eventDate.getTime())) {
+      return res.status(400).json({
+        error: "Invalid date format. Please provide a valid date."
+      });
+    }
+
+    const now = new Date();
+    if (eventDate < now) {
+      return res.status(400).json({
+        error: "Event date must be in the future."
+      });
+    }
+
+    // Validate description if provided
+    if (description !== undefined && typeof description !== "string") {
+      return res.status(400).json({
+        error: "Description must be a string."
+      });
+    }
+
+    // Update the event
+    const updatedEvent: Event = {
+      ...events[eventIndex],
+      title: title.trim(),
+      date: eventDate.toISOString(),
+      location: location.trim(),
+      description: description ? description.trim() : undefined
+    };
+
+    events[eventIndex] = updatedEvent;
+
+    // Return the updated event
+    res.status(200).json(updatedEvent);
+  } catch (error) {
+    console.error("Error updating event:", error);
+    res.status(500).json({
+      error: "Internal server error while updating event."
+    });
+  }
+});
+
 export default router;

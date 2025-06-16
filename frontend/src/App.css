@@ -299,3 +299,24 @@ button[type="button"]:hover {
     width: 100%;
   }
 }
+
+.edit-button {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+}
+
+.edit-button:hover {
+  background-color: #357abd;
+}
+
+.edit-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
