@@ -1,17 +1,19 @@
 import { Router } from "express";
 import { v4 as uuidv4 } from "uuid";
 import { events, Event } from "../models/event";
+import { upload } from "../config/upload";
 
 const router = Router();
 
+// GET /events - Get all events
 router.get("/", (_req, res) => {
   res.status(200).json(events);
 });
 
 // POST /events - Create a new event
-router.post("/", (req, res) => {
+router.post("/", upload.single('image'), (req, res) => {
   try {
-    const { title, date, location, description } = req.body;
+    const { title, date, location, description, categoryIds } = req.body;
 
     // Basic validation - check required fields
     if (!title || !date || !location) {
@@ -55,13 +57,30 @@ router.post("/", (req, res) => {
       });
     }
 
+    // Parse categoryIds if provided
+    let parsedCategoryIds: string[] = [];
+    if (categoryIds) {
+      try {
+        parsedCategoryIds = JSON.parse(categoryIds);
+        if (!Array.isArray(parsedCategoryIds)) {
+          throw new Error("categoryIds must be an array");
+        }
+      } catch (error) {
+        return res.status(400).json({
+          error: "Invalid categoryIds format. Must be a JSON array of strings."
+        });
+      }
+    }
+
     // Create new event with generated UUID
     const newEvent: Event = {
       id: uuidv4(),
       title: title.trim(),
       date: eventDate.toISOString(),
       location: location.trim(),
-      description: description ? description.trim() : undefined
+      description: description ? description.trim() : undefined,
+      categoryIds: parsedCategoryIds,
+      imageUrl: req.file ? `/uploads/${req.file.filename}` : undefined
     };
 
     // Push to memory (events array)
@@ -78,10 +97,10 @@ router.post("/", (req, res) => {
 });
 
 // PUT /events/:id - Update an existing event
-router.put("/:id", (req, res) => {
+router.put("/:id", upload.single('image'), (req, res) => {
   try {
     const { id } = req.params;
-    const { title, date, location, description } = req.body;
+    const { title, date, location, description, categoryIds } = req.body;
 
     // Find the event
     const eventIndex = events.findIndex(event => event.id === id);
@@ -133,13 +152,30 @@ router.put("/:id", (req, res) => {
       });
     }
 
+    // Parse categoryIds if provided
+    let parsedCategoryIds: string[] = [];
+    if (categoryIds) {
+      try {
+        parsedCategoryIds = JSON.parse(categoryIds);
+        if (!Array.isArray(parsedCategoryIds)) {
+          throw new Error("categoryIds must be an array");
+        }
+      } catch (error) {
+        return res.status(400).json({
+          error: "Invalid categoryIds format. Must be a JSON array of strings."
+        });
+      }
+    }
+
     // Update the event
     const updatedEvent: Event = {
       ...events[eventIndex],
       title: title.trim(),
       date: eventDate.toISOString(),
       location: location.trim(),
-      description: description ? description.trim() : undefined
+      description: description ? description.trim() : undefined,
+      categoryIds: parsedCategoryIds,
+      imageUrl: req.file ? `/uploads/${req.file.filename}` : events[eventIndex].imageUrl
     };
 
     events[eventIndex] = updatedEvent;
