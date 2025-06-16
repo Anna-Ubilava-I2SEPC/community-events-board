@@ -28,7 +28,8 @@ h1 {
 }
 
 /* Loading and error states */
-.loading, .error {
+.loading,
+.error {
   text-align: center;
   padding: 2rem;
   font-size: 1.1rem;
@@ -168,7 +169,7 @@ button[type="button"]:hover {
 }
 
 .event-list h2::after {
-  content: '';
+  content: "";
   display: block;
   width: 60px;
   height: 3px;
@@ -210,7 +211,7 @@ button[type="button"]:hover {
 }
 
 .event-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   right: 0;
@@ -272,30 +273,30 @@ button[type="button"]:hover {
   .App {
     padding: 1rem;
   }
-  
+
   h1 {
     font-size: 2rem;
   }
-  
+
   form {
     margin: 1rem auto;
     padding: 1.5rem;
   }
-  
+
   .events-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .event-card {
     padding: 1rem;
   }
-  
+
   .buttons {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   button {
     width: 100%;
   }
@@ -406,7 +407,7 @@ button[type="button"]:hover {
   background-color: #fff;
   padding: 1rem;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .category-card h3 {
@@ -452,7 +453,8 @@ button[type="button"]:hover {
   transition: border 0.2s, background 0.2s;
 }
 
-.category-checkbox:hover, .category-checkbox:focus-within {
+.category-checkbox:hover,
+.category-checkbox:focus-within {
   background: #e8f4f8;
   border: 1px solid #b3e0f2;
 }
@@ -497,7 +499,8 @@ nav a {
   transition: background 0.2s, color 0.2s;
   letter-spacing: 0.5px;
 }
-nav a:hover, nav a.active {
+nav a:hover,
+nav a.active {
   background: #3e4e70;
   color: #ffd700;
 }
@@ -513,13 +516,17 @@ nav a:hover, nav a.active {
     gap: 2rem;
     padding: 1rem;
   }
-  .events-section, .categories-section {
+  .events-section,
+  .categories-section {
     max-width: 100%;
   }
 }
 
 /* Card shadow for forms and lists */
-form, .category-form, .category-card, .event-card {
+form,
+.category-form,
+.category-card,
+.event-card {
   box-shadow: 0 4px 24px rgba(43, 58, 85, 0.08);
 }
 
@@ -555,6 +562,14 @@ form, .category-form, .category-card, .event-card {
   padding: 0.2rem 0.8rem;
   font-size: 0.95em;
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(43,58,85,0.07);
+  box-shadow: 0 1px 3px rgba(43, 58, 85, 0.07);
   border: 1px solid #b3e0f2;
+}
+
+.search-input {
+  padding: 8px;
+  margin: 12px 0;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
