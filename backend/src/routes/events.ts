@@ -8,6 +8,24 @@ import path from 'path';
 
 const router = Router();
 
+// Utility function to delete image file
+const deleteImageFile = async (imageUrl: string): Promise<void> => {
+  // Only delete if the imageUrl is a local file (starts with /uploads/)
+  if (imageUrl && imageUrl.startsWith('/uploads/')) {
+    const filename = path.basename(imageUrl);
+    const imagePath = path.join(process.cwd(), 'uploads', filename);
+    try {
+      // Check if file exists before trying to delete it
+      await fs.promises.access(imagePath);
+      await fs.promises.unlink(imagePath);
+      console.log(`Successfully deleted image: ${filename}`);
+    } catch (error) {
+      console.error(`Error deleting image file (${filename}):`, error);
+      // Don't throw error - we want to continue with the operation even if file deletion fails
+    }
+  }
+};
+
 // GET /events - Get all events (populate categories)
 router.get("/", (async (_req, res) => {
   try {
@@ -67,7 +85,7 @@ router.post("/", upload.single('image'), (async (req, res) => {
 router.put("/:id", upload.single('image'), (async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, date, location, description, categoryIds } = req.body;
+    const { title, date, location, description, categoryIds, removeImage } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ error: "Invalid event ID" });
@@ -97,23 +115,27 @@ router.put("/:id", upload.single('image'), (async (req, res) => {
       }
     }
 
+    // Handle image operations
+    const shouldRemoveImage = removeImage === 'true' || removeImage === true;
+    
+    // If a new image is uploaded or we want to remove the current image, delete the old one
+    if ((req.file || shouldRemoveImage) && event.imageUrl) {
+      await deleteImageFile(event.imageUrl);
+    }
+
     event.title = title.trim();
     event.date = date;
     event.location = location.trim();
     event.description = description ? description.trim() : undefined;
     event.categoryIds = parsedCategoryIds;
-    // If a new image is uploaded, delete the old image file
-    if (req.file && event.imageUrl) {
-      const oldImageRelativePath = event.imageUrl.startsWith('/') ? event.imageUrl.slice(1) : event.imageUrl;
-      const oldImagePath = path.join(__dirname, '../', oldImageRelativePath);
-      try {
-        await fs.promises.unlink(oldImagePath);
-      } catch (error) {
-        console.error('Error deleting old image file during update:', error);
-        // Continue with update even if image deletion fails
-      }
+    
+    // Update image URL based on the operation
+    if (req.file) {
+      event.imageUrl = `/uploads/${req.file.filename}`;
+    } else if (shouldRemoveImage) {
+      event.imageUrl = undefined;
     }
-    if (req.file) event.imageUrl = `/uploads/${req.file.filename}`;
+    // If neither new image nor remove image, keep the existing imageUrl
 
     await event.save();
     const populated = await event.populate("categoryIds");
@@ -129,6 +151,10 @@ router.delete("/:id", (async (req, res) => {
   try {
     const { id } = req.params;
     
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid event ID" });
+    }
+    
     // Find the event first to get the image URL
     const event = await Event.findById(id);
     if (!event) {
@@ -137,16 +163,7 @@ router.delete("/:id", (async (req, res) => {
 
     // Delete the image file if it exists
     if (event.imageUrl) {
-      // Remove leading slash if present
-      const imageRelativePath = event.imageUrl.startsWith('/') ? event.imageUrl.slice(1) : event.imageUrl;
-      // Resolve path relative to backend directory
-      const imagePath = path.join(__dirname, '../', imageRelativePath);
-      try {
-        await fs.promises.unlink(imagePath);
-      } catch (error) {
-        console.error('Error deleting image file:', error);
-        // Continue with event deletion even if image deletion fails
-      }
+      await deleteImageFile(event.imageUrl);
     }
 
     // Delete the event from the database
