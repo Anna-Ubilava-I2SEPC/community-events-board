@@ -36,6 +36,16 @@
 - [ ] Add admin routes
 - [ ] Test role access
 
+### Task 1.7 – Authentication UI
+- [ ] Create login page component
+- [ ] Create registration page component
+- [ ] Add form validation
+- [ ] Implement error handling
+- [ ] Add loading states
+- [ ] Create protected route wrapper
+- [ ] Add logout functionality
+- [ ] Test UI integration with backend
+
 ### Task 2.1 – Event Editing
 - [ ] Create edit endpoint
 - [ ] Add basic validation
