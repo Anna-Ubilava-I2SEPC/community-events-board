@@ -1,6 +1,7 @@
 // src/components/EventForm.tsx
 import React, { useState, useEffect } from "react";
 import type { Event } from "../types/Event";
+import type { Category } from "../types/Category";
 
 interface EventFormProps {
   onEventAdded?: () => void;
@@ -21,14 +22,35 @@ const EventForm: React.FC<EventFormProps> = ({
   const [date, setDate] = useState(initialEvent?.date ? new Date(initialEvent.date).toISOString().split('T')[0] : "");
   const [location, setLocation] = useState(initialEvent?.location || "");
   const [description, setDescription] = useState(initialEvent?.description || "");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(initialEvent?.categoryIds || []);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  useEffect(() => {
+    // Fetch categories when component mounts
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("http://localhost:4000/categories");
+        if (!response.ok) {
+          throw new Error("Failed to fetch categories");
+        }
+        const categoriesData = await response.json();
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const clearForm = () => {
     setTitle("");
     setDate("");
     setLocation("");
     setDescription("");
+    setSelectedCategories([]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,6 +82,7 @@ const EventForm: React.FC<EventFormProps> = ({
       date,
       location,
       description,
+      categoryIds: selectedCategories
     };
 
     try {
@@ -106,6 +129,16 @@ const EventForm: React.FC<EventFormProps> = ({
     }
   };
 
+  const handleCategoryChange = (categoryId: string) => {
+    setSelectedCategories(prev => {
+      if (prev.includes(categoryId)) {
+        return prev.filter(id => id !== categoryId);
+      } else {
+        return [...prev, categoryId];
+      }
+    });
+  };
+
   return (
     <form onSubmit={handleSubmit}>
       <h2>{isEditing ? "Edit Event" : "Add New Event"}</h2>
@@ -146,6 +179,22 @@ const EventForm: React.FC<EventFormProps> = ({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
+      </label>
+
+      <label>
+        Categories:
+        <div className="category-checkboxes">
+          {categories.map(category => (
+            <label key={category.id} className="category-checkbox">
+              <input
+                type="checkbox"
+                checked={selectedCategories.includes(category.id)}
+                onChange={() => handleCategoryChange(category.id)}
+              />
+              {category.name}
+            </label>
+          ))}
+        </div>
       </label>
 
       <div className="buttons">

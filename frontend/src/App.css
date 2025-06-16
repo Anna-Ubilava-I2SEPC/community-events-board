@@ -346,3 +346,117 @@ button[type="button"]:hover {
   background-color: #ccc;
   cursor: not-allowed;
 }
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  padding: 1rem;
+}
+
+.events-section {
+  min-width: 0;
+}
+
+.categories-section {
+  min-width: 0;
+}
+
+.category-form {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.category-form h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.category-form label {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.category-form input,
+.category-form textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.category-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.categories-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.category-card {
+  background-color: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.category-card h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.category-description {
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.category-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.no-categories {
+  text-align: center;
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  color: #666;
+}
+
+.category-checkboxes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.category-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.category-checkbox:hover {
+  background-color: #e9ecef;
+}
+
+.category-checkbox input[type="checkbox"] {
+  margin: 0;
+}
+
+.event-categories {
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
