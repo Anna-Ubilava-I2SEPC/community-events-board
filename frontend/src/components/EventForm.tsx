@@ -1,23 +1,68 @@
 // src/components/EventForm.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import type { Event } from "../types/Event";
+import type { Category } from "../types/Category";
 
 interface EventFormProps {
   onEventAdded?: () => void;
+  initialEvent?: Event;
+  onSubmit?: (event: Event) => void;
+  onCancel?: () => void;
+  isEditing?: boolean;
 }
 
-const EventForm: React.FC<EventFormProps> = ({ onEventAdded }) => {
-  const [title, setTitle] = useState("");
-  const [date, setDate] = useState("");
-  const [location, setLocation] = useState("");
-  const [description, setDescription] = useState("");
+const EventForm: React.FC<EventFormProps> = ({ 
+  onEventAdded, 
+  initialEvent, 
+  onSubmit, 
+  onCancel,
+  isEditing = false 
+}) => {
+  const [title, setTitle] = useState(initialEvent?.title || "");
+  const [date, setDate] = useState(initialEvent?.date ? new Date(initialEvent.date).toISOString().split('T')[0] : "");
+  const [location, setLocation] = useState(initialEvent?.location || "");
+  const [description, setDescription] = useState(initialEvent?.description || "");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    initialEvent?.categoryIds ? initialEvent.categoryIds.map(cat => {
+      if (typeof cat === 'string') return cat;
+      return cat.id || cat._id || '';
+    }).filter(Boolean) : []
+  );
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [image, setImage] = useState<File | null>(null);
+
+  useEffect(() => {
+    // Fetch categories when component mounts
+    const fetchCategories = async () => {
+      try {
+        setCategoriesLoading(true);
+        const response = await fetch("http://localhost:4000/categories");
+        if (!response.ok) {
+          throw new Error("Failed to fetch categories");
+        }
+        const categoriesData = await response.json();
+        setCategories(categoriesData);
+        // Sync selectedCategories to only valid IDs
+        setSelectedCategories(prev => prev.filter(id => categoriesData.some((cat: Category) => String(cat.id) === id)));
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const clearForm = () => {
     setTitle("");
     setDate("");
     setLocation("");
     setDescription("");
+    setSelectedCategories([]);
+    setImage(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,62 +88,78 @@ const EventForm: React.FC<EventFormProps> = ({ onEventAdded }) => {
       return;
     }
 
-    // If all good, log the event (wire POST in 5.1)
-    console.log({
-      title,
-      date,
-      location,
-      description,
-    });
-
-    const newEvent = {
-      title,
-      date,
-      location,
-      description,
-    };
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("date", date);
+    formData.append("location", location);
+    formData.append("description", description);
+    // Ensure categoryIds is properly formatted
+    if (selectedCategories.length > 0) {
+      formData.append("categoryIds", JSON.stringify(selectedCategories));
+    }
+    if (image) {
+      formData.append("image", image);
+    }
 
     try {
       setIsSubmitting(true);
-      const response = await fetch("http://localhost:4000/events", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newEvent),
-      });
 
-      if (!response.ok) {
-        throw new Error("Failed to submit event");
+      if (isEditing && onSubmit) {
+        // Handle edit submission
+        const updatedEvent = {
+          ...(initialEvent || {}),
+          title,
+          date,
+          location,
+          description,
+          categoryIds: selectedCategories,
+          image
+        } as Event & { image?: File | null };
+        await onSubmit(updatedEvent);
+      } else {
+        // Handle new event creation
+        const response = await fetch("http://localhost:4000/events", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to submit event");
+        }
+
+        // Show success state
+        setSubmitSuccess(true);
+        clearForm();
+        if (onEventAdded) {
+          onEventAdded();
+        }
+        setTimeout(() => {
+          setSubmitSuccess(false);
+        }, 2000);
       }
-
-      // Show success state
-      setSubmitSuccess(true);
-      
-      // Clear form on successful submission
-      clearForm();
-      
-      // Notify parent component that an event was added
-      if (onEventAdded) {
-        onEventAdded();
-      }
-
-      // Reset success state after 2 seconds
-      setTimeout(() => {
-        setSubmitSuccess(false);
-      }, 2000);
-      
     } catch (error) {
       console.error("Error submitting event:", error);
-      alert("There was a problem submitting your event.");
+      alert(error instanceof Error ? error.message : "There was a problem submitting your event.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleCategoryChange = (categoryId: string) => {
+    setSelectedCategories(prev => {
+      const normalizedId = categoryId.toString();
+      if (prev.includes(normalizedId)) {
+        return prev.filter(id => id !== normalizedId);
+      } else {
+        return [...prev, normalizedId];
+      }
+    });
+  };
+
   return (
     <form onSubmit={handleSubmit}>
-      <h2>Add New Event</h2>
+      <h2>{isEditing ? "Edit Event" : "Add New Event"}</h2>
 
       <label>
         Title*:
@@ -138,21 +199,66 @@ const EventForm: React.FC<EventFormProps> = ({ onEventAdded }) => {
         />
       </label>
 
+      <label>
+        Categories:
+        {categoriesLoading ? (
+          <div>Loading categories...</div>
+        ) : (
+          <div className="category-checkboxes">
+            {categories.map(category => {
+              const catId = String(category.id || category._id);
+              const checkboxId = `category-checkbox-${catId}`;
+              return (
+                <label key={catId} className="category-checkbox" htmlFor={checkboxId}>
+                  <input
+                    id={checkboxId}
+                    name={checkboxId}
+                    type="checkbox"
+                    checked={selectedCategories.includes(catId)}
+                    onChange={() => handleCategoryChange(catId)}
+                  />
+                  <span style={{ margin: 0, fontWeight: 600 }}>{category.name}</span>
+                </label>
+              );
+            })}
+          </div>
+        )}
+      </label>
+
+      <label>
+        Image:
+        <input
+          type="file"
+          accept="image/*"
+          onChange={e => setImage(e.target.files ? e.target.files[0] : null)}
+        />
+      </label>
+
       <div className="buttons">
         <button 
           type="submit" 
           disabled={isSubmitting}
           className={submitSuccess ? "success" : ""}
         >
-          {isSubmitting ? "Submitting..." : submitSuccess ? "✓ Success!" : "Submit Event"}
+          {isSubmitting ? "Submitting..." : submitSuccess ? "✓ Success!" : isEditing ? "Update Event" : "Submit Event"}
         </button>
-        <button
-          type="button"
-          onClick={clearForm}
-          disabled={isSubmitting}
-        >
-          Clear Form
-        </button>
+        {isEditing ? (
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={clearForm}
+            disabled={isSubmitting}
+          >
+            Clear Form
+          </button>
+        )}
       </div>
     </form>
   );

@@ -3,13 +3,17 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./App.css";
 import EventForm from "./components/EventForm";
 import EventList from "./components/EventList";
+import CategoryForm from "./components/CategoryForm";
+import CategoryList from "./components/CategoryList";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import type { Event } from "./types/Event";
+import type { Category } from "./types/Category";
 import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
   const [events, setEvents] = useState<Event[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,7 +28,15 @@ function App() {
         throw new Error("Failed to fetch events");
       }
       
-      const eventsData = await response.json();
+      let eventsData = await response.json();
+      // Normalize id field
+      eventsData = eventsData.map((event: any) => ({
+        ...event,
+        id: event._id || event.id,
+        categoryIds: event.categoryIds?.map((cat: any) =>
+          typeof cat === 'object' && cat !== null ? { ...cat, id: cat._id || cat.id } : cat
+        ) || [],
+      }));
       setEvents(eventsData);
     } catch (error) {
       console.error("Error fetching events:", error);
@@ -34,9 +46,29 @@ function App() {
     }
   };
 
-  // Fetch events when component mounts
+  // Function to fetch categories from the API
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch("http://localhost:4000/categories");
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch categories");
+      }
+      
+      let categoriesData = await response.json();
+      // Normalize id field
+      categoriesData = categoriesData.map((cat: any) => ({ ...cat, id: cat._id || cat.id }));
+      setCategories(categoriesData);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      setError("Failed to load categories. Please try again later.");
+    }
+  };
+
+  // Fetch events and categories when component mounts
   useEffect(() => {
     fetchEvents();
+    fetchCategories();
   }, []);
 
   // Function to refresh events (to be called after form submission)
@@ -44,71 +76,50 @@ function App() {
     fetchEvents();
   };
 
+  // Function to refresh categories (to be called after form submission)
+  const handleCategoryAdded = () => {
+    fetchCategories();
+  };
+
   const Home = () => (
     <div>
       <h1>Community Events Board</h1>
-      <EventForm onEventAdded={handleEventAdded} />
-      {loading && <p>Loading events...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {!loading && !error && <EventList events={events} />}
+      <div className="content-grid">
+        <div className="events-section">
+          <EventForm onEventAdded={handleEventAdded} />
+          {loading && <p>Loading events...</p>}
+          {error && <p style={{ color: "red" }}>{error}</p>}
+          {!loading && !error && <EventList events={events} onEventUpdated={handleEventAdded} />}
+        </div>
+        <div className="categories-section">
+          <CategoryForm onCategoryAdded={handleCategoryAdded} />
+          <CategoryList categories={categories} onCategoryUpdated={handleCategoryAdded} />
+        </div>
+      </div>
     </div>
   );
 
   return (
     <AuthProvider>
       <Router>
-        <div>
-          <nav style={styles.nav}>
-            <div style={styles.navLeft}>
-              <Link to="/" style={styles.link}>Home</Link>
-            </div>
-            <div style={styles.navRight}>
-              <Link to="/login" style={styles.link}>Login</Link>
-              <Link to="/register" style={styles.link}>Sign Up</Link>
-            </div>
+        <div className="app">
+          <nav>
+            <ul>
+              <li><Link to="/">Home</Link></li>
+              <li><Link to="/login">Login</Link></li>
+              <li><Link to="/register">Register</Link></li>
+            </ul>
           </nav>
 
-          <div style={styles.content}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-            </Routes>
-          </div>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Routes>
         </div>
       </Router>
     </AuthProvider>
   );
 }
-
-const styles = {
-  nav: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '1rem 2rem',
-    backgroundColor: '#f8f9fa',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-  },
-  navLeft: {
-    display: 'flex',
-    gap: '1rem',
-  },
-  navRight: {
-    display: 'flex',
-    gap: '1rem',
-  },
-  link: {
-    textDecoration: 'none',
-    color: '#007bff',
-    fontWeight: 'bold',
-    '&:hover': {
-      textDecoration: 'underline',
-    },
-  },
-  content: {
-    padding: '2rem',
-  },
-};
 
 export default App;
