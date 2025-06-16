@@ -6,6 +6,7 @@ import EventList from "./components/EventList";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import type { Event } from "./types/Event";
+import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -54,27 +55,29 @@ function App() {
   );
 
   return (
-    <Router>
-      <div>
-        <nav style={styles.nav}>
-          <div style={styles.navLeft}>
-            <Link to="/" style={styles.link}>Home</Link>
-          </div>
-          <div style={styles.navRight}>
-            <Link to="/login" style={styles.link}>Login</Link>
-            <Link to="/register" style={styles.link}>Sign Up</Link>
-          </div>
-        </nav>
+    <AuthProvider>
+      <Router>
+        <div>
+          <nav style={styles.nav}>
+            <div style={styles.navLeft}>
+              <Link to="/" style={styles.link}>Home</Link>
+            </div>
+            <div style={styles.navRight}>
+              <Link to="/login" style={styles.link}>Login</Link>
+              <Link to="/register" style={styles.link}>Sign Up</Link>
+            </div>
+          </nav>
 
-        <div style={styles.content}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-          </Routes>
+          <div style={styles.content}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+            </Routes>
+          </div>
         </div>
-      </div>
-    </Router>
+      </Router>
+    </AuthProvider>
   );
 }
 
