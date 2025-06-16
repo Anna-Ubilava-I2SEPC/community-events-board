@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./App.css";
 import EventForm from "./components/EventForm";
 import EventList from "./components/EventList";
+import Login from "./components/Login";
+import Register from "./components/Register";
 import type { Event } from "./types/Event";
+import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -40,7 +44,7 @@ function App() {
     fetchEvents();
   };
 
-  return (
+  const Home = () => (
     <div>
       <h1>Community Events Board</h1>
       <EventForm onEventAdded={handleEventAdded} />
@@ -49,6 +53,62 @@ function App() {
       {!loading && !error && <EventList events={events} />}
     </div>
   );
+
+  return (
+    <AuthProvider>
+      <Router>
+        <div>
+          <nav style={styles.nav}>
+            <div style={styles.navLeft}>
+              <Link to="/" style={styles.link}>Home</Link>
+            </div>
+            <div style={styles.navRight}>
+              <Link to="/login" style={styles.link}>Login</Link>
+              <Link to="/register" style={styles.link}>Sign Up</Link>
+            </div>
+          </nav>
+
+          <div style={styles.content}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+            </Routes>
+          </div>
+        </div>
+      </Router>
+    </AuthProvider>
+  );
 }
+
+const styles = {
+  nav: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '1rem 2rem',
+    backgroundColor: '#f8f9fa',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+  },
+  navLeft: {
+    display: 'flex',
+    gap: '1rem',
+  },
+  navRight: {
+    display: 'flex',
+    gap: '1rem',
+  },
+  link: {
+    textDecoration: 'none',
+    color: '#007bff',
+    fontWeight: 'bold',
+    '&:hover': {
+      textDecoration: 'underline',
+    },
+  },
+  content: {
+    padding: '2rem',
+  },
+};
 
 export default App;
