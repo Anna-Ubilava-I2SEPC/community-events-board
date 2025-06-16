@@ -112,8 +112,9 @@ const EventForm: React.FC<EventFormProps> = ({
           date,
           location,
           description,
-          categoryIds: selectedCategories
-        } as Event;
+          categoryIds: selectedCategories,
+          image
+        } as Event & { image?: File | null };
         await onSubmit(updatedEvent);
       } else {
         // Handle new event creation

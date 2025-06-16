@@ -102,6 +102,17 @@ router.put("/:id", upload.single('image'), (async (req, res) => {
     event.location = location.trim();
     event.description = description ? description.trim() : undefined;
     event.categoryIds = parsedCategoryIds;
+    // If a new image is uploaded, delete the old image file
+    if (req.file && event.imageUrl) {
+      const oldImageRelativePath = event.imageUrl.startsWith('/') ? event.imageUrl.slice(1) : event.imageUrl;
+      const oldImagePath = path.join(__dirname, '../', oldImageRelativePath);
+      try {
+        await fs.promises.unlink(oldImagePath);
+      } catch (error) {
+        console.error('Error deleting old image file during update:', error);
+        // Continue with update even if image deletion fails
+      }
+    }
     if (req.file) event.imageUrl = `/uploads/${req.file.filename}`;
 
     await event.save();
@@ -126,7 +137,10 @@ router.delete("/:id", (async (req, res) => {
 
     // Delete the image file if it exists
     if (event.imageUrl) {
-      const imagePath = path.join(__dirname, '..', event.imageUrl);
+      // Remove leading slash if present
+      const imageRelativePath = event.imageUrl.startsWith('/') ? event.imageUrl.slice(1) : event.imageUrl;
+      // Resolve path relative to backend directory
+      const imagePath = path.join(__dirname, '../', imageRelativePath);
       try {
         await fs.promises.unlink(imagePath);
       } catch (error) {

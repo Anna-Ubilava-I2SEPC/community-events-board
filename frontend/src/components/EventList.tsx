@@ -18,7 +18,7 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
     setEditingEvent(null);
   };
 
-  const handleEditSubmit = async (updatedEvent: Event) => {
+  const handleEditSubmit = async (updatedEvent: Event & { image?: File | null }) => {
     try {
       const formData = new FormData();
       formData.append("title", updatedEvent.title);
@@ -28,8 +28,8 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
       formData.append("categoryIds", JSON.stringify(
         updatedEvent.categoryIds.map(cat => typeof cat === 'object' && cat !== null && 'id' in cat ? cat.id : cat)
       ));
-      // If image is present in updatedEvent, append it (for now, skip as EventForm does not support editing image)
-      // if (updatedEvent.image) formData.append("image", updatedEvent.image);
+      // If image is present in updatedEvent, append it
+      if (updatedEvent.image) formData.append("image", updatedEvent.image);
 
       const response = await fetch(`http://localhost:4000/events/${updatedEvent.id}`, {
         method: "PUT",
