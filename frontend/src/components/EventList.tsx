@@ -11,16 +11,13 @@ interface EventListProps {
 const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
 
-  const handleEditClick = (event: Event) => {
-    setEditingEvent(event);
-  };
-
-  const handleEditCancel = () => {
-    setEditingEvent(null);
-  };
+  const handleEditClick = (event: Event) => setEditingEvent(event);
+  const handleEditCancel = () => setEditingEvent(null);
 
   const handleEditSubmit = async (
+    
     updatedEvent: Event & { image?: File | null }
+  
   ) => {
     try {
       const formData = new FormData();
@@ -54,9 +51,7 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
       }
 
       setEditingEvent(null);
-      if (onEventUpdated) {
-        onEventUpdated();
-      }
+      onEventUpdated?.();
     } catch (error) {
       console.error("Error updating event:", error);
       alert("There was a problem updating the event.");
@@ -64,22 +59,16 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
   };
 
   const handleDeleteClick = async (eventId: string) => {
-    if (!window.confirm("Are you sure you want to delete this event?")) {
-      return;
-    }
+    if (!window.confirm("Are you sure you want to delete this event?")) return;
 
     try {
       const response = await fetch(`http://localhost:4000/events/${eventId}`, {
         method: "DELETE",
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to delete event");
-      }
+      if (!response.ok) throw new Error("Failed to delete event");
 
-      if (onEventUpdated) {
-        onEventUpdated();
-      }
+      onEventUpdated?.();
     } catch (error) {
       console.error("Error deleting event:", error);
       alert("There was a problem deleting the event.");
@@ -91,7 +80,7 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
       <h2>Upcoming Events</h2>
       {events.length === 0 ? (
         <div className="no-events">
-          <p>No events found. Be the first to add one!</p>
+          <p>No events found. Try changing your search or filters.</p>
         </div>
       ) : (
         <div className="events-grid">
