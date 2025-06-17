@@ -4,6 +4,7 @@ import path from "path";
 import eventsRouter from "./routes/events";
 import usersRouter from "./routes/users";
 import categoriesRouter from "./routes/categories";
+import commentsRouter from "./routes/comments";
 import { connectDB } from "./config/database";
 
 const app = express();
@@ -18,11 +19,12 @@ app.use(cors());
 app.use(express.json()); // Middleware to parse JSON
 
 // Serve static files from uploads directory
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.use("/events", eventsRouter); // Mount the events route
 app.use("/users", usersRouter); // Mount the users route
 app.use("/categories", categoriesRouter); // Mount the categories route
+app.use("/comments", commentsRouter);
 
 app.get("/ping", (_req, res) => {
   res.send("pong");
