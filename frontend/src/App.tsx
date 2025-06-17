@@ -9,7 +9,7 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import type { Event } from "./types/Event";
 import type { Category } from "./types/Category";
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider } from "./contexts/AuthContext";
 
 function App() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -23,19 +23,22 @@ function App() {
       setLoading(true);
       setError(null);
       const response = await fetch("http://localhost:4000/events");
-      
+
       if (!response.ok) {
         throw new Error("Failed to fetch events");
       }
-      
+
       let eventsData = await response.json();
       // Normalize id field
       eventsData = eventsData.map((event: any) => ({
         ...event,
         id: event._id || event.id,
-        categoryIds: event.categoryIds?.map((cat: any) =>
-          typeof cat === 'object' && cat !== null ? { ...cat, id: cat._id || cat.id } : cat
-        ) || [],
+        categoryIds:
+          event.categoryIds?.map((cat: any) =>
+            typeof cat === "object" && cat !== null
+              ? { ...cat, id: cat._id || cat.id }
+              : cat
+          ) || [],
       }));
       setEvents(eventsData);
     } catch (error) {
@@ -50,14 +53,17 @@ function App() {
   const fetchCategories = async () => {
     try {
       const response = await fetch("http://localhost:4000/categories");
-      
+
       if (!response.ok) {
         throw new Error("Failed to fetch categories");
       }
-      
+
       let categoriesData = await response.json();
       // Normalize id field
-      categoriesData = categoriesData.map((cat: any) => ({ ...cat, id: cat._id || cat.id }));
+      categoriesData = categoriesData.map((cat: any) => ({
+        ...cat,
+        id: cat._id || cat.id,
+      }));
       setCategories(categoriesData);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -89,11 +95,16 @@ function App() {
           <EventForm onEventAdded={handleEventAdded} />
           {loading && <p>Loading events...</p>}
           {error && <p style={{ color: "red" }}>{error}</p>}
-          {!loading && !error && <EventList events={events} onEventUpdated={handleEventAdded} />}
+          {!loading && !error && (
+            <EventList events={events} onEventUpdated={handleEventAdded} />
+          )}
         </div>
         <div className="categories-section">
           <CategoryForm onCategoryAdded={handleCategoryAdded} />
-          <CategoryList categories={categories} onCategoryUpdated={handleCategoryAdded} />
+          <CategoryList
+            categories={categories}
+            onCategoryUpdated={handleCategoryAdded}
+          />
         </div>
       </div>
     </div>
@@ -105,9 +116,15 @@ function App() {
         <div className="app">
           <nav>
             <ul>
-              <li><Link to="/">Home</Link></li>
-              <li><Link to="/login">Login</Link></li>
-              <li><Link to="/register">Register</Link></li>
+              <li>
+                <Link to="/">Home</Link>
+              </li>
+              <li>
+                <Link to="/login">Login</Link>
+              </li>
+              <li>
+                <Link to="/register">Register</Link>
+              </li>
             </ul>
           </nav>
 
