@@ -87,9 +87,22 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
       });
 
       if (res.ok) {
-        const data = await res.json();
-        setRatings((prev) => ({ ...prev, [eventId]: data.averageRating }));
         setUserRatings((prev) => ({ ...prev, [eventId]: value }));
+
+        // Fetch updated average and userRating
+        const ratingRes = await fetch(
+          `http://localhost:4000/ratings/${eventId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (ratingRes.ok) {
+          const data = await ratingRes.json();
+          setRatings((prev) => ({ ...prev, [eventId]: data.averageRating }));
+        }
       } else {
         const err = await res.text();
         console.error("Failed to submit rating:", err);
@@ -166,8 +179,8 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
                   <StarRating
                     rating={userRatings[event.id] || 0}
                     onRate={(val) => handleRating(event.id, val)}
-                    readOnly={!!userRatings[event.id]}
                   />
+
                   <p style={{ fontSize: "0.9rem", color: "#666" }}>
                     Average Rating: {ratings[event.id]?.toFixed(1) || "N/A"} / 5
                   </p>

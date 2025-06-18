@@ -27,9 +27,10 @@ router.get(
           ? ratings.reduce((sum, r) => sum + r.value, 0) / ratings.length
           : 0;
 
-      const userRating = ratings.find((r) => r.userId === userId)?.value || 0;
+      const userRating =
+        ratings.find((r) => r.userId === userId)?.value ?? null;
 
-      res.json({ average, userRating });
+      res.json({ averageRating: average, userRating });
     } catch (err) {
       console.error("Error fetching ratings:", err);
       res.status(500).json({ message: "Failed to load ratings" });
