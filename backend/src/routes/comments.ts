@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import Comment from "../models/Comment";
+import { User } from "../models/User";
 import { auth } from "../middleware/auth";
 
 const router = express.Router();
@@ -28,11 +29,18 @@ router.post("/", auth, async (req: any, res: Response): Promise<void> => {
       return;
     }
 
+    // Fetch the user's name from the database
+    const user = await User.findById(req.user.userId);
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
     const newComment = new Comment({
       eventId,
       content,
       userId: req.user.userId,
-      userName: req.user.userId, // Replace with actual user name if available
+      userName: user.name, // Use the actual user name
     });
 
     await newComment.save();

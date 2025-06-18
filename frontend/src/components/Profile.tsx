@@ -18,7 +18,7 @@ const Profile: React.FC = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [activeSection, setActiveSection] = useState<'profile' | 'email' | 'password'>('profile');
+  const [activeSection, setActiveSection] = useState<'profile' | 'email' | 'password' | 'myevents'>('profile');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -162,27 +162,43 @@ const Profile: React.FC = () => {
       {message && <div className="success-message">{message}</div>}
       {error && <div className="error-message">{error}</div>}
 
-      {/* Section Navigation */}
-      <div className="profile-nav">
-        <button
-          className={`profile-nav-btn ${activeSection === 'profile' ? 'active' : ''}`}
-          onClick={() => setActiveSection('profile')}
-        >
-          Profile Info
-        </button>
-        <button
-          className={`profile-nav-btn ${activeSection === 'email' ? 'active' : ''}`}
-          onClick={() => setActiveSection('email')}
-        >
-          Change Email
-        </button>
-        <button
-          className={`profile-nav-btn ${activeSection === 'password' ? 'active' : ''}`}
-          onClick={() => setActiveSection('password')}
-        >
-          Change Password
-        </button>
-      </div>
+      <div className="profile-layout">
+        {/* Sidebar Navigation */}
+        <div className="profile-sidebar">
+          <nav className="profile-nav">
+            <button
+              className={`profile-nav-btn ${activeSection === 'profile' ? 'active' : ''}`}
+              onClick={() => setActiveSection('profile')}
+            >
+              <span className="nav-icon">👤</span>
+              Profile Info
+            </button>
+            <button
+              className={`profile-nav-btn ${activeSection === 'email' ? 'active' : ''}`}
+              onClick={() => setActiveSection('email')}
+            >
+              <span className="nav-icon">📧</span>
+              Change Email
+            </button>
+            <button
+              className={`profile-nav-btn ${activeSection === 'password' ? 'active' : ''}`}
+              onClick={() => setActiveSection('password')}
+            >
+              <span className="nav-icon">🔐</span>
+              Change Password
+            </button>
+            <button
+              className={`profile-nav-btn ${activeSection === 'myevents' ? 'active' : ''}`}
+              onClick={() => setActiveSection('myevents')}
+            >
+              <span className="nav-icon">📅</span>
+              My Events
+            </button>
+          </nav>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="profile-content">
 
       {/* Profile Info Section */}
       {activeSection === 'profile' && (
@@ -337,6 +353,19 @@ const Profile: React.FC = () => {
           </form>
         </div>
       )}
+
+      {/* My Events Section */}
+      {activeSection === 'myevents' && (
+        <div className="profile-section">
+          <h2>My Events</h2>
+          <div className="my-events-content">
+            <p className="empty-state">You haven't created any events yet.</p>
+            <p className="empty-state-subtitle">Your created events will appear here.</p>
+          </div>
+        </div>
+      )}
+        </div>
+      </div>
     </div>
   );
 };
