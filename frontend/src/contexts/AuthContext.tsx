@@ -1,25 +1,62 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: any | null;
+  user: User | null;
+  loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => void;
+  updateUserData: (userData: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Function to fetch user profile data
+  const fetchUserProfile = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      const response = await axios.get('http://localhost:4000/users/profile', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setUser(response.data);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      // If token is invalid, remove it
+      localStorage.removeItem('token');
+      setIsAuthenticated(false);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      setIsAuthenticated(true);
-      // You could also fetch user data here
+      fetchUserProfile();
+    } else {
+      setLoading(false);
     }
   }, []);
 
@@ -31,8 +68,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       const { token } = response.data;
       localStorage.setItem('token', token);
-      setIsAuthenticated(true);
-      // You could also fetch and set user data here
+      
+      // Fetch user profile after successful login
+      setLoading(true);
+      await fetchUserProfile();
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -48,8 +87,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       const { token } = response.data;
       localStorage.setItem('token', token);
-      setIsAuthenticated(true);
-      // You could also fetch and set user data here
+      
+      // Fetch user profile after successful registration
+      setLoading(true);
+      await fetchUserProfile();
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
@@ -62,8 +103,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   };
 
+  const updateUserData = (userData: User) => {
+    setUser(userData);
+  };
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, register, logout }}>
+    <AuthContext.Provider value={{ 
+      isAuthenticated, 
+      user, 
+      loading, 
+      login, 
+      register, 
+      logout, 
+      updateUserData 
+    }}>
       {children}
     </AuthContext.Provider>
   );
