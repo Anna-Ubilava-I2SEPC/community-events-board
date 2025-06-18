@@ -188,17 +188,6 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
 
                   <h3>{event.title}</h3>
 
-                  <StarRating
-                    rating={userRatings[event.id] || 0}
-                    onRate={(val) => handleRating(event.id, val)}
-                  />
-
-                  <p style={{ fontSize: "0.9rem", color: "#666" }}>
-                    Average Rating:{" "}
-                    {ratings[event.id]?.average?.toFixed(1) || "N/A"} / 5 (
-                    {ratings[event.id]?.votes?.toFixed(0)} votes)
-                  </p>
-
                   <div className="event-details">
                     <p className="event-date">
                       <strong>📅 Date:</strong>{" "}
@@ -249,6 +238,17 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
                           </div>
                         </div>
                       )}
+
+                    <StarRating
+                      rating={userRatings[event.id] || 0}
+                      onRate={(val) => handleRating(event.id, val)}
+                    />
+                    <p style={{ fontSize: "0.9rem", color: "#666" }}>
+                      Average Rating:{" "}
+                      {ratings[event.id]?.average?.toFixed(1) || "N/A"} / 5 (
+                      {ratings[event.id]?.votes?.toFixed(0)} votes)
+                    </p>
+
                     <div className="event-actions">
                       <button
                         className="edit-button"
