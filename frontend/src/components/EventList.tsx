@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { Event } from "../types/Event";
-import EventForm from "./EventForm";
-import CommentsSection from "./CommentsSection";
 import StarRating from "./StarRating";
 
 interface EventListProps {
@@ -10,71 +9,14 @@ interface EventListProps {
 }
 
 const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
-  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const navigate = useNavigate();
   const [ratings, setRatings] = useState<
     Record<string, { average: number; votes: number }>
   >({});
   const [userRatings, setUserRatings] = useState<Record<string, number>>({});
 
-  const handleEditClick = (event: Event) => setEditingEvent(event);
-  const handleEditCancel = () => setEditingEvent(null);
-
-  const handleEditSubmit = async (
-    updatedEvent: Event & { image?: File | null }
-  ) => {
-    try {
-      const formData = new FormData();
-      formData.append("title", updatedEvent.title);
-      formData.append("date", updatedEvent.date);
-      formData.append("location", updatedEvent.location);
-      formData.append("description", updatedEvent.description || "");
-      formData.append(
-        "categoryIds",
-        JSON.stringify(
-          updatedEvent.categoryIds.map((cat) =>
-            typeof cat === "object" && cat !== null && "id" in cat
-              ? cat.id
-              : cat
-          )
-        )
-      );
-      if (updatedEvent.image) formData.append("image", updatedEvent.image);
-
-      const response = await fetch(
-        `http://localhost:4000/events/${updatedEvent.id}`,
-        {
-          method: "PUT",
-          body: formData,
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to update event");
-      }
-
-      setEditingEvent(null);
-      onEventUpdated?.();
-    } catch (error) {
-      console.error("Error updating event:", error);
-      alert("There was a problem updating the event.");
-    }
-  };
-
-  const handleDeleteClick = async (eventId: string) => {
-    if (!window.confirm("Are you sure you want to delete this event?")) return;
-
-    try {
-      const response = await fetch(`http://localhost:4000/events/${eventId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("Failed to delete event");
-
-      onEventUpdated?.();
-    } catch (error) {
-      console.error("Error deleting event:", error);
-      alert("There was a problem deleting the event.");
-    }
+  const handleCardClick = (eventId: string) => {
+    navigate(`/events/${eventId}`);
   };
 
   const handleRating = async (eventId: string, value: number) => {
@@ -112,6 +54,7 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
             },
           }));
         }
+        onEventUpdated?.();
       } else {
         const err = await res.text();
         console.error("Failed to submit rating:", err);
@@ -166,107 +109,91 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
       ) : (
         <div className="events-grid">
           {events.map((event) => (
-            <div key={event.id} className="event-card">
-              {editingEvent?.id === event.id ? (
-                <EventForm
-                  initialEvent={event}
-                  onSubmit={handleEditSubmit}
-                  onCancel={handleEditCancel}
-                  isEditing={true}
-                />
-              ) : (
-                <>
-                  {event.imageUrl && (
-                    <div className="event-image-wrapper">
-                      <img
-                        src={`http://localhost:4000${event.imageUrl}`}
-                        alt={event.title}
-                        className="event-image"
-                      />
-                    </div>
-                  )}
+            <div
+              key={event.id}
+              className="event-card event-card-clickable"
+              onClick={() => handleCardClick(event.id)}
+            >
+              {event.imageUrl && (
+                <div className="event-image-wrapper">
+                  <img
+                    src={`http://localhost:4000${event.imageUrl}`}
+                    alt={event.title}
+                    className="event-image"
+                    style={{ maxHeight: "180px", objectFit: "cover" }}
+                  />
+                </div>
+              )}
 
-                  <h3>{event.title}</h3>
+              <div className="event-card-content">
+                <h3>{event.title}</h3>
 
-                  <div className="event-details">
-                    <p className="event-date">
-                      <strong>📅 Date:</strong>{" "}
-                      {new Date(event.date).toLocaleDateString("en-US", {
-                        weekday: "long",
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </p>
-                    <p className="event-location">
-                      <strong>📍 Location:</strong> {event.location}
-                    </p>
-                    {event.description && (
-                      <p className="event-description">
-                        <strong>ℹ️ Description:</strong> {event.description}
-                      </p>
-                    )}
-                    {Array.isArray(event.categoryIds) &&
-                      event.categoryIds.length > 0 && (
-                        <div className="event-categories-list">
-                          <strong>🏷️ Categories:</strong>
-                          <div className="event-category-badges">
-                            {event.categoryIds.map((cat, idx) => {
-                              let name = "";
-                              let key = "";
-                              if (typeof cat === "object" && cat !== null) {
-                                name = (cat as any).name || "";
-                                key =
-                                  (cat as any).id ||
-                                  (cat as any)._id ||
-                                  idx.toString();
-                              } else if (typeof cat === "string") {
-                                name = cat;
-                                key = cat;
-                              } else {
-                                key = idx.toString();
-                              }
-                              return (
-                                <span
-                                  key={key}
-                                  className="event-category-badge"
-                                >
-                                  {name}
-                                </span>
-                              );
-                            })}
-                          </div>
+                <div className="event-details">
+                  <p className="event-date">
+                    <strong>📅 Date:</strong>{" "}
+                    {new Date(event.date).toLocaleDateString("en-US", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
+                  <p className="event-location">
+                    <strong>📍 Location:</strong> {event.location}
+                  </p>
+
+                  {Array.isArray(event.categoryIds) &&
+                    event.categoryIds.length > 0 && (
+                      <div className="event-categories-list">
+                        <strong>🏷️ Categories:</strong>
+                        <div className="event-category-badges">
+                          {event.categoryIds.map((cat, idx) => {
+                            let name = "";
+                            let key = "";
+                            if (typeof cat === "object" && cat !== null) {
+                              name = (cat as any).name || "";
+                              key =
+                                (cat as any).id ||
+                                (cat as any)._id ||
+                                idx.toString();
+                            } else if (typeof cat === "string") {
+                              name = cat;
+                              key = cat;
+                            } else {
+                              key = idx.toString();
+                            }
+                            return (
+                              <span key={key} className="event-category-badge">
+                                {name}
+                              </span>
+                            );
+                          })}
                         </div>
-                      )}
+                      </div>
+                    )}
 
+                  <div
+                    className="rating-section"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <StarRating
                       rating={userRatings[event.id] || 0}
                       onRate={(val) => handleRating(event.id, val)}
                     />
-                    <p style={{ fontSize: "0.9rem", color: "#666" }}>
+                    <p
+                      style={{
+                        fontSize: "0.9rem",
+                        color: "#666",
+                        margin: "4px 0 0",
+                      }}
+                    >
                       Average Rating:{" "}
                       {ratings[event.id]?.average?.toFixed(1) || "N/A"} / 5 (
                       {ratings[event.id]?.votes?.toFixed(0)} votes)
                     </p>
-
-                    <div className="event-actions">
-                      <button
-                        className="edit-button"
-                        onClick={() => handleEditClick(event)}
-                      >
-                        Edit Event
-                      </button>
-                      <button
-                        className="delete-button"
-                        onClick={() => handleDeleteClick(event.id)}
-                      >
-                        Delete Event
-                      </button>
-                    </div>
                   </div>
-                  <CommentsSection eventId={event.id} />
-                </>
-              )}
+                </div>
+              </div>
             </div>
           ))}
         </div>

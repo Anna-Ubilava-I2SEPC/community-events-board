@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./App.css";
 import EventForm from "./components/EventForm";
 import EventList from "./components/EventList";
+import EventPage from "./components/EventPage";
 import CategoryForm from "./components/CategoryForm";
 import CategoryList from "./components/CategoryList";
 import Login from "./components/Login";
@@ -385,6 +386,7 @@ function App() {
           <div className="app-content">
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/events/:id" element={<EventPage />} />
               <Route path="/add-event" element={<AddEventPage />} />
               <Route path="/categories" element={<CategoriesPage />} />
               <Route path="/login" element={<Login />} />
