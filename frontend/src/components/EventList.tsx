@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import type { Event } from "../types/Event";
 import EventForm from "./EventForm";
 import CommentsSection from "./CommentsSection";
@@ -11,6 +11,8 @@ interface EventListProps {
 
 const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [ratings, setRatings] = useState<Record<string, number>>({});
+  const [userRatings, setUserRatings] = useState<Record<string, number>>({});
 
   const handleEditClick = (event: Event) => setEditingEvent(event);
   const handleEditCancel = () => setEditingEvent(null);
@@ -34,7 +36,6 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
           )
         )
       );
-      // If image is present in updatedEvent, append it
       if (updatedEvent.image) formData.append("image", updatedEvent.image);
 
       const response = await fetch(
@@ -74,6 +75,62 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
     }
   };
 
+  const handleRating = async (eventId: string, value: number) => {
+    try {
+      const res = await fetch("http://localhost:4000/ratings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ eventId, value }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setRatings((prev) => ({ ...prev, [eventId]: data.averageRating }));
+        setUserRatings((prev) => ({ ...prev, [eventId]: value }));
+      } else {
+        const err = await res.text();
+        console.error("Failed to submit rating:", err);
+      }
+    } catch (error) {
+      console.error("Error submitting rating:", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchRatings = async () => {
+      const allRatings: Record<string, number> = {};
+      const userGivenRatings: Record<string, number> = {};
+
+      for (const event of events) {
+        try {
+          const res = await fetch(`http://localhost:4000/ratings/${event.id}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            allRatings[event.id] = data.averageRating || 0;
+            if (data.userRating) {
+              userGivenRatings[event.id] = data.userRating;
+            }
+          }
+        } catch (err) {
+          console.error("Failed to fetch rating for event:", event.id);
+        }
+      }
+
+      setRatings(allRatings);
+      setUserRatings(userGivenRatings);
+    };
+
+    fetchRatings();
+  }, [events]);
+
   return (
     <div className="event-list">
       <h2>Upcoming Events</h2>
@@ -106,17 +163,15 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
 
                   <h3>{event.title}</h3>
 
-                  {/* Add test star rating below title */}
                   <StarRating
-                    rating={0}
-                    onRate={(val) =>
-                      console.log(
-                        `User rated event ${event.id} with ${val} stars`
-                      )
-                    }
+                    rating={userRatings[event.id] || 0}
+                    onRate={(val) => handleRating(event.id, val)}
+                    readOnly={!!userRatings[event.id]}
                   />
+                  <p style={{ fontSize: "0.9rem", color: "#666" }}>
+                    Average Rating: {ratings[event.id]?.toFixed(1) || "N/A"} / 5
+                  </p>
 
-                  <h3>{event.title}</h3>
                   <div className="event-details">
                     <p className="event-date">
                       <strong>📅 Date:</strong>{" "}
@@ -135,7 +190,6 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
                         <strong>ℹ️ Description:</strong> {event.description}
                       </p>
                     )}
-                    {/* Show categories if available */}
                     {Array.isArray(event.categoryIds) &&
                       event.categoryIds.length > 0 && (
                         <div className="event-categories-list">
@@ -183,7 +237,6 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
                       </button>
                     </div>
                   </div>
-                  {/*  Comments Section */}
                   <CommentsSection eventId={event.id} />
                 </>
               )}
