@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import type { Event } from "../types/Event";
 import EventForm from "./EventForm";
 import CommentsSection from "./CommentsSection";
+import StarRating from "./StarRating";
 
 interface EventListProps {
   events: Event[];
@@ -15,9 +16,7 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
   const handleEditCancel = () => setEditingEvent(null);
 
   const handleEditSubmit = async (
-    
     updatedEvent: Event & { image?: File | null }
-  
   ) => {
     try {
       const formData = new FormData();
@@ -104,6 +103,19 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
                       />
                     </div>
                   )}
+
+                  <h3>{event.title}</h3>
+
+                  {/* Add test star rating below title */}
+                  <StarRating
+                    rating={0}
+                    onRate={(val) =>
+                      console.log(
+                        `User rated event ${event.id} with ${val} stars`
+                      )
+                    }
+                  />
+
                   <h3>{event.title}</h3>
                   <div className="event-details">
                     <p className="event-date">
