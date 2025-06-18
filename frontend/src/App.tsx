@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react-router-dom";
 import "./App.css";
 import EventForm from "./components/EventForm";
 import EventList from "./components/EventList";
@@ -39,9 +39,11 @@ interface EventsResponse {
 // Navigation Component
 const Navigation: React.FC = () => {
   const { isAuthenticated, user, logout, loading } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
+    navigate('/'); // Redirect to home page after logout
   };
 
   return (
