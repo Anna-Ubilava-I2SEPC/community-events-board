@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react-router-dom";
 import "./App.css";
 import EventForm from "./components/EventForm";
 import EventList from "./components/EventList";
@@ -8,13 +8,14 @@ import CategoryForm from "./components/CategoryForm";
 import CategoryList from "./components/CategoryList";
 import Login from "./components/Login";
 import Register from "./components/Register";
+import Profile from "./components/Profile";
 import SearchBar from "./components/SearchBar";
 import FilterSidebar, { type FilterState } from "./components/FilterSidebar";
 import SortDropdown, { type SortState } from "./components/SortDropdown";
 import NoResults from "./components/NoResults";
 import type { Event } from "./types/Event";
 import type { Category } from "./types/Category";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 
 // Extended Event response type for API
 interface EventsResponse {
@@ -36,14 +37,94 @@ interface EventsResponse {
   };
 }
 
-function App() {
+// Navigation Component
+const Navigation: React.FC = () => {
+  const { isAuthenticated, user, logout, loading } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/'); // Redirect to home page after logout
+  };
+
+  return (
+    <nav className="main-nav">
+      <div className="nav-container">
+        <div className="nav-brand">
+          <Link to="/" className="brand-link">
+            <span className="brand-icon">🎉 </span>
+            Events Board
+          </Link>
+        </div>
+        <ul className="nav-links">
+          <li>
+            <Link to="/" className="nav-link">
+              <span className="nav-icon">🏠 </span>
+              Home
+            </Link>
+          </li>
+          <li>
+            <Link to="/add-event" className="nav-link">
+              <span className="nav-icon">➕ </span>
+              Add Event
+            </Link>
+          </li>
+          <li>
+            <Link to="/categories" className="nav-link">
+              <span className="nav-icon">📂 </span>
+              Categories
+            </Link>
+          </li>
+          
+          {!loading && (
+            <>
+              {isAuthenticated ? (
+                <>
+                  <li>
+                    <Link to="/profile" className="nav-link">
+                      <span className="nav-icon">👤 </span>
+                      {user?.name || 'Profile'}
+                    </Link>
+                  </li>
+                  <li>
+                    <button onClick={handleLogout} className="nav-link nav-button">
+                      <span className="nav-icon">🚪 </span>
+                      Logout
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    <Link to="/login" className="nav-link">
+                      <span className="nav-icon">🔑 </span>
+                      Login
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/register" className="nav-link">
+                      <span className="nav-icon">👤 </span>
+                      Register
+                    </Link>
+                  </li>
+                </>
+              )}
+            </>
+          )}
+        </ul>
+      </div>
+    </nav>
+  );
+};
+
+function AppContent() {
   const [events, setEvents] = useState<Event[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Search and filter states
-  const [searchTerm, setSearchTerm] = useState("");
+  // Search, Filter, and Sort state
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [filters, setFilters] = useState<FilterState>({
     categories: [],
     startDate: "",
@@ -61,37 +142,23 @@ function App() {
     totalEvents: 0,
   });
 
-  // Function to build query parameters
+  // Build query parameters for API calls
   const buildQueryParams = useCallback(() => {
     const params = new URLSearchParams();
 
-    if (searchTerm.trim()) {
-      params.append("search", searchTerm.trim());
-    }
-
-    if (filters.categories.length > 0) {
+    if (searchTerm) params.append("search", searchTerm);
+    if (filters.categories.length > 0)
       params.append("categories", filters.categories.join(","));
-    }
-
-    if (filters.startDate) {
-      params.append("startDate", filters.startDate);
-    }
-
-    if (filters.endDate) {
-      params.append("endDate", filters.endDate);
-    }
-
-    if (filters.location.trim()) {
-      params.append("location", filters.location.trim());
-    }
-
-    params.append("sortBy", sortState.sortBy);
-    params.append("sortOrder", sortState.sortOrder);
+    if (filters.startDate) params.append("startDate", filters.startDate);
+    if (filters.endDate) params.append("endDate", filters.endDate);
+    if (filters.location) params.append("location", filters.location);
+    if (sortState.sortBy) params.append("sortBy", sortState.sortBy);
+    if (sortState.sortOrder) params.append("sortOrder", sortState.sortOrder);
 
     return params.toString();
   }, [searchTerm, filters, sortState]);
 
-  // Function to fetch events from the API with search, filter, and sort
+  // Function to fetch events from the API
   const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
@@ -337,64 +404,29 @@ function App() {
   );
 
   return (
-    <AuthProvider>
-      <Router>
-        <div className="app">
-          <nav className="main-nav">
-            <div className="nav-container">
-              <div className="nav-brand">
-                <Link to="/" className="brand-link">
-                  <span className="brand-icon">🎉 </span>
-                  Events Board
-                </Link>
-              </div>
-              <ul className="nav-links">
-                <li>
-                  <Link to="/" className="nav-link">
-                    <span className="nav-icon">🏠 </span>
-                    Home
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/add-event" className="nav-link">
-                    <span className="nav-icon">➕ </span>
-                    Add Event
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/categories" className="nav-link">
-                    <span className="nav-icon">📂 </span>
-                    Categories
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/login" className="nav-link">
-                    <span className="nav-icon">🔑 </span>
-                    Login
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/register" className="nav-link">
-                    <span className="nav-icon">👤 </span>
-                    Register
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </nav>
-
-          <div className="app-content">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/events/:id" element={<EventPage />} />
-              <Route path="/add-event" element={<AddEventPage />} />
-              <Route path="/categories" element={<CategoriesPage />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-            </Routes>
-          </div>
+    <Router>
+      <div className="app">
+        <Navigation />
+        <div className="app-content">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/events/:id" element={<EventPage />} />
+            <Route path="/add-event" element={<AddEventPage />} />
+            <Route path="/categories" element={<CategoriesPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/profile" element={<Profile />} />
+          </Routes>
         </div>
-      </Router>
+      </div>
+    </Router>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
     </AuthProvider>
   );
 }

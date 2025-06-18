@@ -851,6 +851,30 @@ button[type="button"]:hover {
   transform: translateY(-2px);
 }
 
+/* Button styled like nav-link */
+.nav-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.7rem 1rem;
+  color: white;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  min-width: auto;
+  border-radius: 6px;
+}
+
+.nav-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffd700;
+  transform: translateY(-2px);
+}
+
 .nav-icon {
   font-size: 1.1rem;
 }
