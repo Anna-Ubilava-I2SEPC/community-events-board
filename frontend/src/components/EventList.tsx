@@ -11,7 +11,9 @@ interface EventListProps {
 
 const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
-  const [ratings, setRatings] = useState<Record<string, number>>({});
+  const [ratings, setRatings] = useState<
+    Record<string, { average: number; votes: number }>
+  >({});
   const [userRatings, setUserRatings] = useState<Record<string, number>>({});
 
   const handleEditClick = (event: Event) => setEditingEvent(event);
@@ -89,7 +91,7 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
       if (res.ok) {
         setUserRatings((prev) => ({ ...prev, [eventId]: value }));
 
-        // Fetch updated average and userRating
+        // Fetch updated average and vote count
         const ratingRes = await fetch(
           `http://localhost:4000/ratings/${eventId}`,
           {
@@ -101,7 +103,14 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
 
         if (ratingRes.ok) {
           const data = await ratingRes.json();
-          setRatings((prev) => ({ ...prev, [eventId]: data.averageRating }));
+
+          setRatings((prev) => ({
+            ...prev,
+            [eventId]: {
+              average: data.averageRating,
+              votes: data.totalVotes,
+            },
+          }));
         }
       } else {
         const err = await res.text();
@@ -114,7 +123,7 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
 
   useEffect(() => {
     const fetchRatings = async () => {
-      const allRatings: Record<string, number> = {};
+      const allRatings: Record<string, { average: number; votes: number }> = {};
       const userGivenRatings: Record<string, number> = {};
 
       for (const event of events) {
@@ -127,7 +136,10 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
 
           if (res.ok) {
             const data = await res.json();
-            allRatings[event.id] = data.averageRating || 0;
+            allRatings[event.id] = {
+              average: data.averageRating || 0,
+              votes: data.totalVotes || 0,
+            };
             if (data.userRating) {
               userGivenRatings[event.id] = data.userRating;
             }
@@ -182,7 +194,9 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
                   />
 
                   <p style={{ fontSize: "0.9rem", color: "#666" }}>
-                    Average Rating: {ratings[event.id]?.toFixed(1) || "N/A"} / 5
+                    Average Rating:{" "}
+                    {ratings[event.id]?.average?.toFixed(1) || "N/A"} / 5 (
+                    {ratings[event.id]?.votes?.toFixed(0)} votes)
                   </p>
 
                   <div className="event-details">
