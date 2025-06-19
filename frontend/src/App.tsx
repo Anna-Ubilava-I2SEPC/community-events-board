@@ -413,7 +413,7 @@ function AppContent() {
             <Route path="/" element={<Home />} />
             <Route path="/events/:id" element={<EventPage />} />
             <Route path="/add-event" element={<ProtectedRoute><AddEventPage /></ProtectedRoute>} />
-            <Route path="/categories" element={<CategoriesPage />} />
+            <Route path="/categories" element={<ProtectedRoute><CategoriesPage /></ProtectedRoute>} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
