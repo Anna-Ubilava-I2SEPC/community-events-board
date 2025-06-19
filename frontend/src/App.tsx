@@ -9,6 +9,7 @@ import CategoryList from "./components/CategoryList";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Profile from "./components/Profile";
+import ProtectedRoute from "./components/ProtectedRoute";
 import SearchBar from "./components/SearchBar";
 import FilterSidebar, { type FilterState } from "./components/FilterSidebar";
 import SortDropdown, { type SortState } from "./components/SortDropdown";
@@ -411,11 +412,11 @@ function AppContent() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/events/:id" element={<EventPage />} />
-            <Route path="/add-event" element={<AddEventPage />} />
+            <Route path="/add-event" element={<ProtectedRoute><AddEventPage /></ProtectedRoute>} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           </Routes>
         </div>
       </div>
