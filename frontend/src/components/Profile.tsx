@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
+import type { Event } from '../types/Event';
+import type { Category } from '../types/Category';
+import EventForm from './EventForm';
 
 const Profile: React.FC = () => {
   const { user, isAuthenticated, updateUserData, logout } = useAuth();
@@ -22,6 +25,21 @@ const Profile: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+
+  // My Events states
+  const [myEvents, setMyEvents] = useState<Event[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
+  const [eventsError, setEventsError] = useState('');
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  
+  // Filters for My Events
+  const [eventSearch, setEventSearch] = useState('');
+  const [eventCategories, setEventCategories] = useState<string[]>([]);
+  const [eventStartDate, setEventStartDate] = useState('');
+  const [eventEndDate, setEventEndDate] = useState('');
+  const [eventSortBy, setEventSortBy] = useState('date');
+  const [eventSortOrder, setEventSortOrder] = useState('asc');
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -48,6 +66,18 @@ const Profile: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [message, error]);
+
+  // Fetch categories when component mounts
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  // Fetch my events when My Events section is active or filters change
+  useEffect(() => {
+    if (activeSection === 'myevents') {
+      fetchMyEvents();
+    }
+  }, [activeSection, eventSearch, eventCategories, eventStartDate, eventEndDate, eventSortBy, eventSortOrder]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,6 +175,149 @@ const Profile: React.FC = () => {
         setShowConfirmPassword(!showConfirmPassword);
         break;
     }
+  };
+
+  // Fetch categories for filtering
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get('http://localhost:4000/categories');
+      setCategories(response.data);
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+    }
+  };
+
+  // Fetch user's events
+  const fetchMyEvents = async () => {
+    try {
+      setEventsLoading(true);
+      setEventsError('');
+      
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams();
+      
+      if (eventSearch) params.append('search', eventSearch);
+      if (eventCategories.length > 0) params.append('categories', eventCategories.join(','));
+      if (eventStartDate) params.append('startDate', eventStartDate);
+      if (eventEndDate) params.append('endDate', eventEndDate);
+      if (eventSortBy) params.append('sortBy', eventSortBy);
+      if (eventSortOrder) params.append('sortOrder', eventSortOrder);
+      
+      const url = `http://localhost:4000/events/my${params.toString() ? `?${params.toString()}` : ''}`;
+      
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Normalize event data
+      const eventsData = response.data.events.map((event: any) => ({
+        ...event,
+        id: event._id || event.id,
+        categoryIds: event.categoryIds?.map((cat: any) =>
+          typeof cat === "object" && cat !== null
+            ? { ...cat, id: cat._id || cat.id }
+            : cat
+        ) || [],
+      }));
+      
+      setMyEvents(eventsData);
+    } catch (err: any) {
+      console.error('Error fetching my events:', err);
+      setEventsError('Failed to load your events');
+    } finally {
+      setEventsLoading(false);
+    }
+  };
+
+  // Handle event deletion
+  const handleDeleteEvent = async (eventId: string) => {
+    if (!window.confirm('Are you sure you want to delete this event?')) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`http://localhost:4000/events/${eventId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Remove from local state
+      setMyEvents(prev => prev.filter(event => event.id !== eventId));
+      setMessage('Event deleted successfully!');
+    } catch (err: any) {
+      setError('Failed to delete event');
+    }
+  };
+
+  // Handle event editing
+  const handleEditEvent = (event: Event) => {
+    setEditingEvent(event);
+  };
+
+  const handleEditSubmit = async (updatedEvent: Event & { image?: File | null }) => {
+    try {
+      const formData = new FormData();
+      formData.append("title", updatedEvent.title);
+      formData.append("date", updatedEvent.date);
+      formData.append("location", updatedEvent.location);
+      formData.append("description", updatedEvent.description || "");
+      formData.append(
+        "categoryIds",
+        JSON.stringify(
+          updatedEvent.categoryIds.map((cat) =>
+            typeof cat === "object" && cat !== null && "id" in cat
+              ? cat.id
+              : cat
+          )
+        )
+      );
+      if (updatedEvent.image) formData.append("image", updatedEvent.image);
+
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:4000/events/${updatedEvent.id}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update event");
+      }
+
+      const updatedData = await response.json();
+      const normalizedUpdatedEvent = {
+        ...updatedData,
+        id: updatedData._id || updatedData.id,
+        categoryIds: updatedData.categoryIds?.map((cat: any) =>
+          typeof cat === "object" && cat !== null
+            ? { ...cat, id: cat._id || cat.id }
+            : cat
+        ) || [],
+      };
+
+      // Update local state
+      setMyEvents(prev => prev.map(event => 
+        event.id === updatedEvent.id ? normalizedUpdatedEvent : event
+      ));
+      setEditingEvent(null);
+      setMessage('Event updated successfully!');
+    } catch (err: any) {
+      setError('Failed to update event');
+    }
+  };
+
+  const handleEditCancel = () => {
+    setEditingEvent(null);
+  };
+
+  // Clear event filters
+  const clearEventFilters = () => {
+    setEventSearch('');
+    setEventCategories([]);
+    setEventStartDate('');
+    setEventEndDate('');
+    setEventSortBy('date');
+    setEventSortOrder('asc');
   };
 
   if (!user) {
@@ -358,10 +531,210 @@ const Profile: React.FC = () => {
       {activeSection === 'myevents' && (
         <div className="profile-section">
           <h2>My Events</h2>
-          <div className="my-events-content">
-            <p className="empty-state">You haven't created any events yet.</p>
-            <p className="empty-state-subtitle">Your created events will appear here.</p>
-          </div>
+          
+          {editingEvent ? (
+            <div className="editing-event-form">
+              <h3>Edit Event</h3>
+              <EventForm
+                initialEvent={editingEvent}
+                onSubmit={handleEditSubmit}
+                onCancel={handleEditCancel}
+                isEditing={true}
+              />
+            </div>
+          ) : (
+            <>
+              {/* Filters */}
+              <div className="my-events-filters">
+                <div className="filters-row">
+                  <div className="filter-group">
+                    <label htmlFor="event-search">Search Events</label>
+                    <input
+                      type="text"
+                      id="event-search"
+                      placeholder="Search by title, description, or location..."
+                      value={eventSearch}
+                      onChange={(e) => setEventSearch(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="filter-group">
+                    <label htmlFor="event-start-date">Start Date</label>
+                    <input
+                      type="date"
+                      id="event-start-date"
+                      value={eventStartDate}
+                      onChange={(e) => setEventStartDate(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="filter-group">
+                    <label htmlFor="event-end-date">End Date</label>
+                    <input
+                      type="date"
+                      id="event-end-date"
+                      value={eventEndDate}
+                      onChange={(e) => setEventEndDate(e.target.value)}
+                    />
+                  </div>
+                </div>
+                
+                <div className="filters-row">
+                  <div className="filter-group">
+                    <label htmlFor="event-sort">Sort By</label>
+                    <select
+                      id="event-sort"
+                      value={`${eventSortBy}-${eventSortOrder}`}
+                      onChange={(e) => {
+                        const [sortBy, sortOrder] = e.target.value.split('-');
+                        setEventSortBy(sortBy);
+                        setEventSortOrder(sortOrder);
+                      }}
+                    >
+                      <option value="date-asc">Date (Oldest First)</option>
+                      <option value="date-desc">Date (Newest First)</option>
+                      <option value="title-asc">Title (A-Z)</option>
+                      <option value="title-desc">Title (Z-A)</option>
+                      <option value="location-asc">Location (A-Z)</option>
+                      <option value="location-desc">Location (Z-A)</option>
+                    </select>
+                  </div>
+                  
+                  <div className="filter-group">
+                    <label>Categories</label>
+                    <div className="categories-filter">
+                      {categories.map((category) => (
+                        <label key={category.id || category._id} className="category-checkbox">
+                          <input
+                            type="checkbox"
+                            checked={eventCategories.includes(category.id || category._id || '')}
+                            onChange={(e) => {
+                              const categoryId = category.id || category._id || '';
+                              if (e.target.checked) {
+                                setEventCategories(prev => [...prev, categoryId]);
+                              } else {
+                                setEventCategories(prev => prev.filter(id => id !== categoryId));
+                              }
+                            }}
+                          />
+                          {category.name}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="filter-group">
+                    <button
+                      type="button"
+                      onClick={clearEventFilters}
+                      className="clear-filters-btn"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Events List */}
+              <div className="my-events-list">
+                {eventsLoading && (
+                  <div className="loading-state">
+                    <div className="loading-spinner"></div>
+                    <p>Loading your events...</p>
+                  </div>
+                )}
+
+                {eventsError && (
+                  <div className="error-state">
+                    <p>{eventsError}</p>
+                    <button onClick={fetchMyEvents} className="retry-btn">
+                      Retry
+                    </button>
+                  </div>
+                )}
+
+                {!eventsLoading && !eventsError && myEvents.length === 0 && (
+                  <div className="empty-state">
+                    <p>No events found.</p>
+                    <p className="empty-state-subtitle">
+                      {eventSearch || eventCategories.length > 0 || eventStartDate || eventEndDate
+                        ? "Try adjusting your filters or create your first event."
+                        : "You haven't created any events yet."}
+                    </p>
+                  </div>
+                )}
+
+                {!eventsLoading && !eventsError && myEvents.length > 0 && (
+                  <div className="events-grid">
+                    {myEvents.map((event) => (
+                      <div key={event.id} className="my-event-card">
+                        {event.imageUrl && (
+                          <div className="event-image-wrapper">
+                            <img
+                              src={`http://localhost:4000${event.imageUrl}`}
+                              alt={event.title}
+                              className="event-image"
+                            />
+                          </div>
+                        )}
+                        
+                        <div className="event-card-content">
+                          <h3>{event.title}</h3>
+                          <div className="event-details">
+                            <p><strong>📅 Date:</strong> {new Date(event.date).toLocaleDateString()}</p>
+                            <p><strong>📍 Location:</strong> {event.location}</p>
+                            {event.description && (
+                              <p><strong>ℹ️ Description:</strong> {event.description}</p>
+                            )}
+                            {Array.isArray(event.categoryIds) && event.categoryIds.length > 0 && (
+                              <div className="event-categories">
+                                <strong>🏷️ Categories:</strong>
+                                <div className="event-category-badges">
+                                  {event.categoryIds.map((cat, idx) => {
+                                    let name = "";
+                                    let key = "";
+                                    if (typeof cat === "object" && cat !== null) {
+                                      name = (cat as any).name || "";
+                                      key = (cat as any).id || (cat as any)._id || idx.toString();
+                                    } else if (typeof cat === "string") {
+                                      name = cat;
+                                      key = cat;
+                                    } else {
+                                      key = idx.toString();
+                                    }
+                                    return (
+                                      <span key={key} className="event-category-badge">
+                                        {name}
+                                      </span>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="my-event-actions">
+                            <button
+                              onClick={() => handleEditEvent(event)}
+                              className="edit-btn"
+                            >
+                              ✏️ Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteEvent(event.id)}
+                              className="delete-btn"
+                            >
+                              🗑️ Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
       )}
         </div>
