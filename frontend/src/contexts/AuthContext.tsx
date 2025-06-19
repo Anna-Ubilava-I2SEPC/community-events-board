@@ -34,7 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      const response = await axios.get('http://localhost:4000/users/profile', {
+      const response = await axios.get('http://51.21.199.217:4000/users/profile', {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -62,7 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post('http://localhost:4000/users/login', {
+      const response = await axios.post('http://51.21.199.217:4000/users/login', {
         email,
         password,
       });
@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = async (email: string, password: string, name: string) => {
     try {
-      const response = await axios.post('http://localhost:4000/users/register', {
+      const response = await axios.post('http://51.21.199.217:4000/users/register', {
         email,
         password,
         name,

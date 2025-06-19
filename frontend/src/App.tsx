@@ -187,7 +187,7 @@ function AppContent() {
       setError(null);
 
       const queryParams = buildQueryParams();
-      const url = `http://localhost:4000/events${
+      const url = `http://51.21.199.217:4000/events${
         queryParams ? `?${queryParams}` : ""
       }`;
       const response = await fetch(url);
@@ -223,7 +223,7 @@ function AppContent() {
   // Function to fetch categories from the API
   const fetchCategories = async () => {
     try {
-      const response = await fetch("http://localhost:4000/categories");
+      const response = await fetch("http://51.21.199.217:4000/categories");
 
       if (!response.ok) {
         throw new Error("Failed to fetch categories");

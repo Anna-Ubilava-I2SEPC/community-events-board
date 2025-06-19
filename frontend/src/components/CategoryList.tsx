@@ -33,7 +33,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onCategoryUpdat
 
   const handleEditSubmit = async (updatedCategory: Category) => {
     try {
-      const response = await fetch(`http://localhost:4000/categories/${updatedCategory.id}`, {
+      const response = await fetch(`http://51.21.199.217:4000/categories/${updatedCategory.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -62,7 +62,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onCategoryUpdat
     }
 
     try {
-      const response = await fetch(`http://localhost:4000/categories/${categoryId}`, {
+      const response = await fetch(`http://51.21.199.217:4000/categories/${categoryId}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${localStorage.getItem("token")}`,

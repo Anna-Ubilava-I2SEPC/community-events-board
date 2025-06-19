@@ -49,7 +49,7 @@ const EventForm: React.FC<EventFormProps> = ({
     const fetchCategories = async () => {
       try {
         setCategoriesLoading(true);
-        const response = await fetch("http://localhost:4000/categories");
+        const response = await fetch("http://51.21.199.217:4000/categories");
         if (!response.ok) {
           throw new Error("Failed to fetch categories");
         }
@@ -132,7 +132,7 @@ const EventForm: React.FC<EventFormProps> = ({
         await onSubmit(updatedEvent);
       } else {
         // Handle new event creation
-        const response = await fetch("http://localhost:4000/events", {
+        const response = await fetch("http://51.21.199.217:4000/events", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,

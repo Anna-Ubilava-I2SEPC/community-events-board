@@ -21,7 +21,7 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
 
   const handleRating = async (eventId: string, value: number) => {
     try {
-      const res = await fetch("http://localhost:4000/ratings", {
+      const res = await fetch("http://51.21.199.217:4000/ratings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -35,7 +35,7 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
 
         // Fetch updated average and vote count
         const ratingRes = await fetch(
-          `http://localhost:4000/ratings/${eventId}`,
+          `http://51.21.199.217:4000/ratings/${eventId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -71,7 +71,7 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
 
       for (const event of events) {
         try {
-          const res = await fetch(`http://localhost:4000/ratings/${event.id}`, {
+          const res = await fetch(`http://51.21.199.217:4000/ratings/${event.id}`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
@@ -117,7 +117,7 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
               {event.imageUrl && (
                 <div className="event-image-wrapper">
                   <img
-                    src={`http://localhost:4000${event.imageUrl}`}
+                    src={`http://51.21.199.217:4000${event.imageUrl}`}
                     alt={event.title}
                     className="event-image"
                     style={{ maxHeight: "180px", objectFit: "cover" }}

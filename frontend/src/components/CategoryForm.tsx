@@ -49,7 +49,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
         await onSubmit(categoryData as Category);
       } else {
         // Handle new category creation
-        const response = await fetch("http://localhost:4000/categories", {
+        const response = await fetch("http://51.21.199.217:4000/categories", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -88,7 +88,7 @@ const Profile: React.FC = () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.put(
-        'http://localhost:4000/users/profile',
+        'http://51.21.199.217:4000/users/profile',
         { name },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -111,7 +111,7 @@ const Profile: React.FC = () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.put(
-        'http://localhost:4000/users/change-email',
+        'http://51.21.199.217:4000/users/change-email',
         { newEmail: email, currentPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -147,7 +147,7 @@ const Profile: React.FC = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.put(
-        'http://localhost:4000/users/change-password',
+        'http://51.21.199.217:4000/users/change-password',
         { currentPassword, newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -180,7 +180,7 @@ const Profile: React.FC = () => {
   // Fetch categories for filtering
   const fetchCategories = async () => {
     try {
-      const response = await axios.get('http://localhost:4000/categories');
+      const response = await axios.get('http://51.21.199.217:4000/categories');
       setCategories(response.data);
     } catch (err) {
       console.error('Error fetching categories:', err);
@@ -203,7 +203,7 @@ const Profile: React.FC = () => {
       if (eventSortBy) params.append('sortBy', eventSortBy);
       if (eventSortOrder) params.append('sortOrder', eventSortOrder);
       
-      const url = `http://localhost:4000/events/my${params.toString() ? `?${params.toString()}` : ''}`;
+      const url = `http://51.21.199.217:4000/events/my${params.toString() ? `?${params.toString()}` : ''}`;
       
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` }
@@ -235,7 +235,7 @@ const Profile: React.FC = () => {
     
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:4000/events/${eventId}`, {
+      await axios.delete(`http://51.21.199.217:4000/events/${eventId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -272,7 +272,7 @@ const Profile: React.FC = () => {
       if (updatedEvent.image) formData.append("image", updatedEvent.image);
 
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:4000/events/${updatedEvent.id}`, {
+      const response = await fetch(`http://51.21.199.217:4000/events/${updatedEvent.id}`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -671,7 +671,7 @@ const Profile: React.FC = () => {
                         {event.imageUrl && (
                           <div className="event-image-wrapper">
                             <img
-                              src={`http://localhost:4000${event.imageUrl}`}
+                              src={`http://51.21.199.217:4000${event.imageUrl}`}
                               alt={event.title}
                               className="event-image"
                             />

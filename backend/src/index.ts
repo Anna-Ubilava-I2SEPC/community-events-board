@@ -9,13 +9,22 @@ import ratingsRouter from "./routes/ratings";
 import { connectDB } from "./config/database";
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = Number(process.env.PORT) || "4000";
 
 // Connect to MongoDB
 connectDB().catch(console.error);
 
-// Enable CORS for frontend communication
-app.use(cors());
+// CORS Configuration
+const corsOptions = {
+  origin: [
+    "http://localhost:5173", // Local development
+    `http://${process.env.EC2_PUBLIC_IP || "51.21.199.217"}:5173`, // EC2 frontend
+  ],
+  credentials: true, // Allow cookies if needed
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json()); // Middleware to parse JSON
 
@@ -32,6 +41,6 @@ app.get("/ping", (_req, res) => {
   res.send("pong");
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+app.listen(4000, "0.0.0.0", () => {
+  console.log(`Server running at http://51.21.199.217:4000`);
 });

@@ -58,7 +58,7 @@ const EventPage: React.FC = () => {
         setError(null);
 
         const response = await fetch(
-          `http://localhost:4000/events?page=1&limit=1000`
+          `http://51.21.199.217:4000/events?page=1&limit=1000`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch events");
@@ -104,7 +104,7 @@ const EventPage: React.FC = () => {
       if (!event) return;
 
       try {
-        const res = await fetch(`http://localhost:4000/ratings/${event.id}`, {
+        const res = await fetch(`http://51.21.199.217:4000/ratings/${event.id}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -132,7 +132,7 @@ const EventPage: React.FC = () => {
     if (!event) return;
 
     try {
-      const res = await fetch("http://localhost:4000/ratings", {
+      const res = await fetch("http://51.21.199.217:4000/ratings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -146,7 +146,7 @@ const EventPage: React.FC = () => {
 
         // Fetch updated average and vote count
         const ratingRes = await fetch(
-          `http://localhost:4000/ratings/${event.id}`,
+          `http://51.21.199.217:4000/ratings/${event.id}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -202,7 +202,7 @@ const EventPage: React.FC = () => {
       if (updatedEvent.image) formData.append("image", updatedEvent.image);
 
       const response = await fetch(
-        `http://localhost:4000/events/${updatedEvent.id}`,
+        `http://51.21.199.217:4000/events/${updatedEvent.id}`,
         {
           method: "PUT",
           headers: {
@@ -242,7 +242,7 @@ const EventPage: React.FC = () => {
     if (!window.confirm("Are you sure you want to delete this event?")) return;
 
     try {
-      const response = await fetch(`http://localhost:4000/events/${event.id}`, {
+      const response = await fetch(`http://51.21.199.217:4000/events/${event.id}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${localStorage.getItem("token")}`,
@@ -343,7 +343,7 @@ const EventPage: React.FC = () => {
               {event.imageUrl && (
                 <div className="event-image-wrapper">
                   <img
-                    src={`http://localhost:4000${event.imageUrl}`}
+                    src={`http://51.21.199.217:4000${event.imageUrl}`}
                     alt={event.title}
                     className="event-image-large"
                   />
