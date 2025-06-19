@@ -16,11 +16,13 @@ import type { Event } from "../types/Event";
 import EventForm from "./EventForm";
 import CommentsSection from "./CommentsSection";
 import StarRating from "./StarRating";
+import { useAuth } from "../contexts/AuthContext";
 import "../App.css";
 
 const EventPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +39,9 @@ const EventPage: React.FC = () => {
   const shareTitle = `Check out this event: ${event?.title}`;
   const shareDescription =
     event?.description || `${event?.title} - ${event?.location}`;
+
+  // Check if current user is the creator of the event
+  const isCreator = isAuthenticated && user && event && event.createdBy === user._id;
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -198,6 +203,9 @@ const EventPage: React.FC = () => {
         `http://localhost:4000/events/${updatedEvent.id}`,
         {
           method: "PUT",
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          },
           body: formData,
         }
       );
@@ -234,6 +242,9 @@ const EventPage: React.FC = () => {
     try {
       const response = await fetch(`http://localhost:4000/events/${event.id}`, {
         method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+        },
       });
 
       if (!response.ok) throw new Error("Failed to delete event");
@@ -356,6 +367,11 @@ const EventPage: React.FC = () => {
                       <strong>ℹ️ Description:</strong> {event.description}
                     </p>
                   )}
+                  {event.createdByName && (
+                    <p className="event-creator">
+                      <strong>👤 Created by:</strong> {event.createdByName}
+                    </p>
+                  )}
                   {Array.isArray(event.categoryIds) &&
                     event.categoryIds.length > 0 && (
                       <div className="event-categories-list">
@@ -395,14 +411,16 @@ const EventPage: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="event-actions">
-                  <button className="edit-button" onClick={handleEditClick}>
-                    Edit Event
-                  </button>
-                  <button className="delete-button" onClick={handleDeleteClick}>
-                    Delete Event
-                  </button>
-                </div>
+                {isCreator && (
+                  <div className="event-actions">
+                    <button className="edit-button" onClick={handleEditClick}>
+                      Edit Event
+                    </button>
+                    <button className="delete-button" onClick={handleDeleteClick}>
+                      Delete Event
+                    </button>
+                  </div>
+                )}
 
                 <div className="social-sharing-section">
                   <h3>Share this event:</h3>
