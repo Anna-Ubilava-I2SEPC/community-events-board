@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react-router-dom";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { useTheme } from "./contexts/ThemeContext";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  useNavigate,
+} from "react-router-dom";
 import "./App.css";
 import EventForm from "./components/EventForm";
 import EventList from "./components/EventList";
@@ -45,8 +53,9 @@ const Navigation: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/'); // Redirect to home page after logout
+    navigate("/"); // Redirect to home page after logout
   };
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <nav className="main-nav">
@@ -76,7 +85,7 @@ const Navigation: React.FC = () => {
               Categories
             </Link>
           </li>
-          
+
           {!loading && (
             <>
               {isAuthenticated ? (
@@ -84,11 +93,14 @@ const Navigation: React.FC = () => {
                   <li>
                     <Link to="/profile" className="nav-link">
                       <span className="nav-icon">👤 </span>
-                      {user?.name || 'Profile'}
+                      {user?.name || "Profile"}
                     </Link>
                   </li>
                   <li>
-                    <button onClick={handleLogout} className="nav-link nav-button">
+                    <button
+                      onClick={handleLogout}
+                      className="nav-link nav-button"
+                    >
                       <span className="nav-icon">🚪 </span>
                       Logout
                     </button>
@@ -112,6 +124,15 @@ const Navigation: React.FC = () => {
               )}
             </>
           )}
+          <li>
+            <button
+              onClick={toggleTheme}
+              className="nav-link nav-button"
+              style={{ fontSize: "1rem" }}
+            >
+              🌓 {theme === "dark" ? "Light Mode" : "Dark Mode"}
+            </button>
+          </li>
         </ul>
       </div>
     </nav>
@@ -370,6 +391,13 @@ function AppContent() {
     </div>
   );
 
+  const { theme } = useTheme();
+
+  useEffect(() => {
+    document.body.classList.remove("dark", "light");
+    document.body.classList.add(theme);
+  }, [theme]);
+
   // Add Event Page Component
   const AddEventPage = () => (
     <div className="page-container">
@@ -412,11 +440,32 @@ function AppContent() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/events/:id" element={<EventPage />} />
-            <Route path="/add-event" element={<ProtectedRoute><AddEventPage /></ProtectedRoute>} />
-            <Route path="/categories" element={<ProtectedRoute><CategoriesPage /></ProtectedRoute>} />
+            <Route
+              path="/add-event"
+              element={
+                <ProtectedRoute>
+                  <AddEventPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/categories"
+              element={
+                <ProtectedRoute>
+                  <CategoriesPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </div>
       </div>
@@ -427,7 +476,9 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
     </AuthProvider>
   );
 }

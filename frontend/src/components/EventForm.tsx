@@ -11,22 +11,32 @@ interface EventFormProps {
   isEditing?: boolean;
 }
 
-const EventForm: React.FC<EventFormProps> = ({ 
-  onEventAdded, 
-  initialEvent, 
-  onSubmit, 
+const EventForm: React.FC<EventFormProps> = ({
+  onEventAdded,
+  initialEvent,
+  onSubmit,
   onCancel,
-  isEditing = false 
+  isEditing = false,
 }) => {
   const [title, setTitle] = useState(initialEvent?.title || "");
-  const [date, setDate] = useState(initialEvent?.date ? new Date(initialEvent.date).toISOString().split('T')[0] : "");
+  const [date, setDate] = useState(
+    initialEvent?.date
+      ? new Date(initialEvent.date).toISOString().split("T")[0]
+      : ""
+  );
   const [location, setLocation] = useState(initialEvent?.location || "");
-  const [description, setDescription] = useState(initialEvent?.description || "");
+  const [description, setDescription] = useState(
+    initialEvent?.description || ""
+  );
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    initialEvent?.categoryIds ? initialEvent.categoryIds.map(cat => {
-      if (typeof cat === 'string') return cat;
-      return cat.id || cat._id || '';
-    }).filter(Boolean) : []
+    initialEvent?.categoryIds
+      ? initialEvent.categoryIds
+          .map((cat) => {
+            if (typeof cat === "string") return cat;
+            return cat.id || cat._id || "";
+          })
+          .filter(Boolean)
+      : []
   );
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -46,7 +56,11 @@ const EventForm: React.FC<EventFormProps> = ({
         const categoriesData = await response.json();
         setCategories(categoriesData);
         // Sync selectedCategories to only valid IDs
-        setSelectedCategories(prev => prev.filter(id => categoriesData.some((cat: Category) => String(cat.id) === id)));
+        setSelectedCategories((prev) =>
+          prev.filter((id) =>
+            categoriesData.some((cat: Category) => String(cat.id) === id)
+          )
+        );
       } catch (error) {
         console.error("Error fetching categories:", error);
       } finally {
@@ -113,7 +127,7 @@ const EventForm: React.FC<EventFormProps> = ({
           location,
           description,
           categoryIds: selectedCategories,
-          image
+          image,
         } as Event & { image?: File | null };
         await onSubmit(updatedEvent);
       } else {
@@ -121,7 +135,7 @@ const EventForm: React.FC<EventFormProps> = ({
         const response = await fetch("http://localhost:4000/events", {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: formData,
         });
@@ -143,17 +157,21 @@ const EventForm: React.FC<EventFormProps> = ({
       }
     } catch (error) {
       console.error("Error submitting event:", error);
-      alert(error instanceof Error ? error.message : "There was a problem submitting your event.");
+      alert(
+        error instanceof Error
+          ? error.message
+          : "There was a problem submitting your event."
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleCategoryChange = (categoryId: string) => {
-    setSelectedCategories(prev => {
+    setSelectedCategories((prev) => {
       const normalizedId = categoryId.toString();
       if (prev.includes(normalizedId)) {
-        return prev.filter(id => id !== normalizedId);
+        return prev.filter((id) => id !== normalizedId);
       } else {
         return [...prev, normalizedId];
       }
@@ -162,7 +180,9 @@ const EventForm: React.FC<EventFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2>{isEditing ? "Edit Event" : "Add New Event"}</h2>
+      <h2 className="form-heading">
+        {isEditing ? "Edit Event" : "Add New Event"}
+      </h2>
 
       <label>
         Title*:
@@ -208,11 +228,15 @@ const EventForm: React.FC<EventFormProps> = ({
           <div>Loading categories...</div>
         ) : (
           <div className="category-checkboxes">
-            {categories.map(category => {
+            {categories.map((category) => {
               const catId = String(category.id || category._id);
               const checkboxId = `category-checkbox-${catId}`;
               return (
-                <label key={catId} className="category-checkbox" htmlFor={checkboxId}>
+                <label
+                  key={catId}
+                  className="category-checkbox"
+                  htmlFor={checkboxId}
+                >
                   <input
                     id={checkboxId}
                     name={checkboxId}
@@ -220,7 +244,9 @@ const EventForm: React.FC<EventFormProps> = ({
                     checked={selectedCategories.includes(catId)}
                     onChange={() => handleCategoryChange(catId)}
                   />
-                  <span style={{ margin: 0, fontWeight: 600 }}>{category.name}</span>
+                  <span style={{ margin: 0, fontWeight: 600 }}>
+                    {category.name}
+                  </span>
                 </label>
               );
             })}
@@ -233,32 +259,30 @@ const EventForm: React.FC<EventFormProps> = ({
         <input
           type="file"
           accept="image/*"
-          onChange={e => setImage(e.target.files ? e.target.files[0] : null)}
+          onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)}
         />
       </label>
 
       <div className="buttons">
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           disabled={isSubmitting}
           className={submitSuccess ? "success" : ""}
         >
-          {isSubmitting ? "Submitting..." : submitSuccess ? "✓ Success!" : isEditing ? "Update Event" : "Submit Event"}
+          {isSubmitting
+            ? "Submitting..."
+            : submitSuccess
+            ? "✓ Success!"
+            : isEditing
+            ? "Update Event"
+            : "Submit Event"}
         </button>
         {isEditing ? (
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
+          <button type="button" onClick={onCancel} disabled={isSubmitting}>
             Cancel
           </button>
         ) : (
-          <button
-            type="button"
-            onClick={clearForm}
-            disabled={isSubmitting}
-          >
+          <button type="button" onClick={clearForm} disabled={isSubmitting}>
             Clear Form
           </button>
         )}
