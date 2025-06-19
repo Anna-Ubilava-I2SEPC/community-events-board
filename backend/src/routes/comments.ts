@@ -64,7 +64,7 @@ router.put("/:id", auth, async (req: any, res: Response): Promise<void> => {
       return;
     }
 
-    if (comment.userId.toString() !== req.user.userId) {
+    if (comment.userId.toString() !== req.user.userId && req.user.role !== 'admin') {
       res.status(403).json({ message: "Unauthorized to edit this comment" });
       return;
     }
@@ -92,7 +92,7 @@ router.delete("/:id", auth, async (req: any, res: Response): Promise<void> => {
       return;
     }
 
-    if (comment.userId.toString() !== req.user.userId) {
+    if (comment.userId.toString() !== req.user.userId && req.user.role !== 'admin') {
       res.status(403).json({ message: "Unauthorized to delete this comment" });
       return;
     }

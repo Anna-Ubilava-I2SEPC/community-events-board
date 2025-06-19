@@ -52,8 +52,8 @@ router.put("/:id", auth, (async (req: any, res) => {
       return res.status(404).json({ error: "Category not found" });
     }
 
-    // Check if the user is the creator of the category
-    if (category.createdBy && category.createdBy.toString() !== req.user.userId) {
+    // Check if the user is the creator of the category or an admin
+    if (category.createdBy && category.createdBy.toString() !== req.user.userId && req.user.role !== 'admin') {
       return res.status(403).json({ error: "You can only edit categories that you created" });
     }
 
@@ -75,8 +75,8 @@ router.delete("/:id", auth, (async (req: any, res) => {
       return res.status(404).json({ error: "Category not found" });
     }
 
-    // Check if the user is the creator of the category
-    if (category.createdBy && category.createdBy.toString() !== req.user.userId) {
+    // Check if the user is the creator of the category or an admin
+    if (category.createdBy && category.createdBy.toString() !== req.user.userId && req.user.role !== 'admin') {
       return res.status(403).json({ error: "You can only delete categories that you created" });
     }
 

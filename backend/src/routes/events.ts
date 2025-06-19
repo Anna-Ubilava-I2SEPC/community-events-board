@@ -347,8 +347,8 @@ router.put("/:id", auth, upload.single("image"), (async (req: any, res) => {
       return res.status(404).json({ error: "Event not found" });
     }
 
-    // Check if the user is the creator of the event
-    if (event.createdBy && event.createdBy.toString() !== req.user.userId) {
+    // Check if the user is the creator of the event or an admin
+    if (event.createdBy && event.createdBy.toString() !== req.user.userId && req.user.role !== 'admin') {
       return res.status(403).json({ error: "You can only edit events that you created" });
     }
 
@@ -424,8 +424,8 @@ router.delete("/:id", auth, (async (req: any, res) => {
       return res.status(404).json({ error: "Event not found" });
     }
 
-    // Check if the user is the creator of the event
-    if (event.createdBy && event.createdBy.toString() !== req.user.userId) {
+    // Check if the user is the creator of the event or an admin
+    if (event.createdBy && event.createdBy.toString() !== req.user.userId && req.user.role !== 'admin') {
       return res.status(403).json({ error: "You can only delete events that you created" });
     }
 
