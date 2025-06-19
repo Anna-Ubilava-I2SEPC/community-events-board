@@ -7,6 +7,8 @@ export interface IEvent extends Document {
   description?: string;
   categoryIds: Types.ObjectId[];
   imageUrl?: string;
+  createdBy: Types.ObjectId;
+  createdByName: string;
 }
 
 const eventSchema = new Schema<IEvent>({
@@ -15,7 +17,9 @@ const eventSchema = new Schema<IEvent>({
   location: { type: String, required: true, trim: true },
   description: { type: String, trim: true },
   categoryIds: [{ type: Schema.Types.ObjectId, ref: 'Category' }],
-  imageUrl: { type: String }
+  imageUrl: { type: String },
+  createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  createdByName: { type: String, required: true, trim: true }
 });
 
 export const Event = mongoose.model<IEvent>('Event', eventSchema);
