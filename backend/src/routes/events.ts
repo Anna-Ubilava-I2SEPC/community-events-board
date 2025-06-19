@@ -1,7 +1,9 @@
 import { Router, RequestHandler } from "express";
 import { Event } from "../models/event";
 import { Category } from "../models/category";
+import { User } from "../models/User";
 import { upload } from "../config/upload";
+import { auth } from "../middleware/auth";
 import mongoose from "mongoose";
 import fs from "fs";
 import path from "path";
@@ -156,8 +158,118 @@ router.get("/", (async (req, res) => {
   }
 }) as RequestHandler);
 
-// POST /events - Create a new event
-router.post("/", upload.single("image"), (async (req, res) => {
+// GET /events/my - Get events created by the authenticated user
+router.get("/my", auth, (async (req: any, res) => {
+  try {
+    const {
+      search,
+      categories,
+      startDate,
+      endDate,
+      sortBy = "date",
+      sortOrder = "asc",
+      limit = 50,
+      page = 1,
+    } = req.query;
+
+    let query = Event.find({ createdBy: req.user.userId });
+
+    // Apply same filtering logic as main events route
+    if (search && typeof search === "string") {
+      const searchRegex = { $regex: search.trim(), $options: "i" };
+      query = query.find({
+        $or: [
+          { title: searchRegex },
+          { description: searchRegex },
+          { location: searchRegex },
+        ],
+      });
+    }
+
+    if (categories && typeof categories === "string") {
+      const categoryIds = categories
+        .split(",")
+        .filter((id) => mongoose.Types.ObjectId.isValid(id));
+      if (categoryIds.length > 0) {
+        query = query.find({
+          categoryIds: {
+            $in: categoryIds.map((id) => new mongoose.Types.ObjectId(id)),
+          },
+        });
+      }
+    }
+
+    if (startDate || endDate) {
+      const dateQuery: any = {};
+      if (startDate && typeof startDate === "string") {
+        dateQuery.$gte = startDate;
+      }
+      if (endDate && typeof endDate === "string") {
+        dateQuery.$lte = endDate;
+      }
+      if (Object.keys(dateQuery).length > 0) {
+        query = query.find({ date: dateQuery });
+      }
+    }
+
+    // Sorting
+    const sortOptions: any = {};
+    const validSortFields = ["date", "title", "location"];
+    const sortField = validSortFields.includes(sortBy as string)
+      ? (sortBy as string)
+      : "date";
+
+    if (sortField === "date") {
+      sortOptions.date = sortOrder === "desc" ? -1 : 1;
+    } else {
+      sortOptions[sortField] = sortOrder === "desc" ? -1 : 1;
+    }
+
+    query = query.sort(sortOptions);
+
+    if (sortField !== "date") {
+      query = query.collation({ locale: "en", strength: 2 });
+    }
+
+    // Pagination
+    const pageNum = Math.max(1, parseInt(page as string) || 1);
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit as string) || 50));
+    const skip = (pageNum - 1) * limitNum;
+
+    const totalQuery = Event.find({ createdBy: req.user.userId });
+    const total = await totalQuery.countDocuments();
+
+    const events = await query
+      .skip(skip)
+      .limit(limitNum)
+      .populate("categoryIds")
+      .exec();
+
+    res.status(200).json({
+      events,
+      pagination: {
+        current: pageNum,
+        total: Math.ceil(total / limitNum),
+        count: events.length,
+        totalEvents: total,
+      },
+      filters: {
+        search: search || "",
+        categories: categories || "",
+        startDate: startDate || "",
+        endDate: endDate || "",
+        sortBy,
+        sortOrder,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching user events:", error);
+    res.status(500).json({ error: "Failed to fetch your events" });
+  }
+}) as RequestHandler);
+
+// POST /events - Create a new event (authenticated)
+router.post("/", auth, upload.single("image"), (async (req: any, res) => {
   try {
     const { title, date, location, description, categoryIds } = req.body;
     if (!title || !date || !location) {
@@ -193,6 +305,12 @@ router.post("/", upload.single("image"), (async (req, res) => {
       }
     }
 
+    // Fetch the user's name from the database
+    const user = await User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
     const event = new Event({
       title: title.trim(),
       date,
@@ -200,6 +318,8 @@ router.post("/", upload.single("image"), (async (req, res) => {
       description: description ? description.trim() : undefined,
       categoryIds: parsedCategoryIds,
       imageUrl: req.file ? `/uploads/${req.file.filename}` : undefined,
+      createdBy: req.user.userId,
+      createdByName: user.name,
     });
 
     await event.save();
@@ -211,8 +331,8 @@ router.post("/", upload.single("image"), (async (req, res) => {
   }
 }) as RequestHandler);
 
-// PUT /events/:id - Update an existing event
-router.put("/:id", upload.single("image"), (async (req, res) => {
+// PUT /events/:id - Update an existing event (authenticated, only by creator)
+router.put("/:id", auth, upload.single("image"), (async (req: any, res) => {
   try {
     const { id } = req.params;
     const { title, date, location, description, categoryIds, removeImage } =
@@ -225,6 +345,11 @@ router.put("/:id", upload.single("image"), (async (req, res) => {
     const event = await Event.findById(id);
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
+    }
+
+    // Check if the user is the creator of the event
+    if (event.createdBy && event.createdBy.toString() !== req.user.userId) {
+      return res.status(403).json({ error: "You can only edit events that you created" });
     }
 
     let parsedCategoryIds: mongoose.Types.ObjectId[] = [];
@@ -284,8 +409,8 @@ router.put("/:id", upload.single("image"), (async (req, res) => {
   }
 }) as RequestHandler);
 
-// DELETE /events/:id - Delete an event
-router.delete("/:id", (async (req, res) => {
+// DELETE /events/:id - Delete an event (authenticated, only by creator)
+router.delete("/:id", auth, (async (req: any, res) => {
   try {
     const { id } = req.params;
 
@@ -297,6 +422,11 @@ router.delete("/:id", (async (req, res) => {
     const event = await Event.findById(id);
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
+    }
+
+    // Check if the user is the creator of the event
+    if (event.createdBy && event.createdBy.toString() !== req.user.userId) {
+      return res.status(403).json({ error: "You can only delete events that you created" });
     }
 
     // Delete the image file if it exists
