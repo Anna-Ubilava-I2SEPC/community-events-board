@@ -34,7 +34,11 @@ const CommentsSection: React.FC<Props> = ({ eventId }) => {
 
   // Check if user can edit/delete a comment (owner or admin)
   const canEditOrDeleteComment = (comment: Comment): boolean => {
-    return !!(isAuthenticated && user && (comment.userId === user._id || user.role === 'admin'));
+    return !!(
+      isAuthenticated &&
+      user &&
+      (comment.userId === user._id || user.role === "admin")
+    );
   };
 
   const fetchComments = async () => {
@@ -139,6 +143,8 @@ const CommentsSection: React.FC<Props> = ({ eventId }) => {
     fetchComments();
   }, [eventId]);
 
+  const isDark = document.body.classList.contains("dark");
+
   return (
     <div className="comments-section" style={{ marginTop: "2rem" }}>
       <h4 style={{ marginBottom: "0.75rem" }}>Comments</h4>
@@ -166,7 +172,7 @@ const CommentsSection: React.FC<Props> = ({ eventId }) => {
           marginTop: "0.75rem",
           padding: "8px 16px",
           borderRadius: "6px",
-          backgroundColor: "#1a202c",
+          backgroundColor: isDark ? "#555" : "#1a202c",
           color: "#fff",
           fontWeight: "bold",
           border: "none",
@@ -185,7 +191,7 @@ const CommentsSection: React.FC<Props> = ({ eventId }) => {
               borderRadius: "8px",
               padding: "12px 16px",
               marginBottom: "1rem",
-              backgroundColor: "#fff",
+              backgroundColor: isDark ? "#333" : "#fff",
             }}
           >
             <div>

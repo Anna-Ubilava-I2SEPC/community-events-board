@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -13,16 +14,19 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      setError('');
+      setError("");
       setLoading(true);
       await login(email, password);
-      navigate('/');
+      navigate("/");
     } catch (err) {
-      setError('Failed to sign in');
+      setError("Failed to sign in");
     } finally {
       setLoading(false);
     }
   };
+
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
 
   return (
     <div style={styles.container}>
@@ -31,7 +35,9 @@ const Login: React.FC = () => {
         {error && <div style={styles.error}>{error}</div>}
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.formGroup}>
-            <label htmlFor="email" style={styles.label}>Email</label>
+            <label htmlFor="email" style={styles.label}>
+              Email
+            </label>
             <input
               type="email"
               id="email"
@@ -42,7 +48,9 @@ const Login: React.FC = () => {
             />
           </div>
           <div style={styles.formGroup}>
-            <label htmlFor="password" style={styles.label}>Password</label>
+            <label htmlFor="password" style={styles.label}>
+              Password
+            </label>
             <input
               type="password"
               id="password"
@@ -52,12 +60,8 @@ const Login: React.FC = () => {
               style={styles.input}
             />
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            style={styles.button}
-          >
-            {loading ? 'Logging in...' : 'Login'}
+          <button type="submit" disabled={loading} style={styles.button}>
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
         <div style={styles.links}>
@@ -70,75 +74,76 @@ const Login: React.FC = () => {
   );
 };
 
-const styles = {
+const getStyles = (theme: string) => ({
   container: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '100vh',
-    backgroundColor: '#f5f5f5',
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "100vh",
+    backgroundColor: theme === "dark" ? "#1e1e1e" : "#f5f5f5",
   },
   formContainer: {
-    backgroundColor: 'white',
-    padding: '2rem',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    width: '100%',
-    maxWidth: '400px',
+    backgroundColor: theme === "dark" ? "#333" : "white",
+    padding: "2rem",
+    borderRadius: "8px",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+    width: "100%",
+    maxWidth: "400px",
   },
   title: {
-    textAlign: 'center' as const,
-    marginBottom: '1.5rem',
-    color: '#333',
+    textAlign: "center" as const,
+    marginBottom: "1.5rem",
+    color: theme === "dark" ? "#white" : "#333",
   },
   form: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '1rem',
+    backgroundColor: theme === "dark" ? "#cbcaca" : "white",
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: "1rem",
   },
   formGroup: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.5rem',
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: "0.5rem",
   },
   label: {
-    fontSize: '0.9rem',
-    color: '#666',
+    fontSize: "0.9rem",
+    color: "#666",
   },
   input: {
-    padding: '0.75rem',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '1rem',
+    padding: "0.75rem",
+    border: "1px solid #ddd",
+    borderRadius: "4px",
+    fontSize: "1rem",
   },
   button: {
-    backgroundColor: '#007bff',
-    color: 'white',
-    padding: '0.75rem',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '1rem',
-    cursor: 'pointer',
-    '&:disabled': {
-      backgroundColor: '#ccc',
+    backgroundColor: "#007bff",
+    color: "white",
+    padding: "0.75rem",
+    border: "none",
+    borderRadius: "4px",
+    fontSize: "1rem",
+    cursor: "pointer",
+    "&:disabled": {
+      backgroundColor: "#ccc",
     },
   },
   error: {
-    color: '#dc3545',
-    marginBottom: '1rem',
-    textAlign: 'center' as const,
+    color: "#dc3545",
+    marginBottom: "1rem",
+    textAlign: "center" as const,
   },
   links: {
-    marginTop: '1rem',
-    textAlign: 'center' as const,
+    marginTop: "1rem",
+    textAlign: "center" as const,
   },
   link: {
-    color: '#007bff',
-    textDecoration: 'none',
-    '&:hover': {
-      textDecoration: 'underline',
+    color: "#007bff",
+    textDecoration: "none",
+    "&:hover": {
+      textDecoration: "underline",
     },
   },
-};
+});
 
-export default Login; 
+export default Login;
