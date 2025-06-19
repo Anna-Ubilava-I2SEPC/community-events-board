@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import type { Category } from "../types/Category";
 import CategoryForm from "./CategoryForm";
+import { useAuth } from "../contexts/AuthContext";
 
 interface CategoryListProps {
   categories: Category[];
@@ -9,6 +10,18 @@ interface CategoryListProps {
 
 const CategoryList: React.FC<CategoryListProps> = ({ categories, onCategoryUpdated }) => {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const { user, isAuthenticated } = useAuth();
+
+  // Check if current user is the creator of a category or an admin
+  const isCreator = (category: Category) => {
+    return isAuthenticated && user && category.createdBy === user._id;
+  };
+
+  const isAdmin = isAuthenticated && user && user.role === 'admin';
+
+  const canEditOrDelete = (category: Category) => {
+    return isCreator(category) || isAdmin;
+  };
 
   const handleEditClick = (category: Category) => {
     setEditingCategory(category);
@@ -24,6 +37,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onCategoryUpdat
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify(updatedCategory),
       });
@@ -50,6 +64,9 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onCategoryUpdat
     try {
       const response = await fetch(`http://localhost:4000/categories/${categoryId}`, {
         method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+        },
       });
 
       if (!response.ok) {
@@ -89,20 +106,27 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onCategoryUpdat
                   {category.description && (
                     <p className="category-description">{category.description}</p>
                   )}
-                  <div className="category-actions">
-                    <button 
-                      className="edit-button"
-                      onClick={() => handleEditClick(category)}
-                    >
-                      Edit Category
-                    </button>
-                    <button 
-                      className="delete-button"
-                      onClick={() => handleDeleteClick(category.id)}
-                    >
-                      Delete Category
-                    </button>
-                  </div>
+                  {category.createdByName && (
+                    <p className="category-creator">
+                      <strong>👤 Created by:</strong> {category.createdByName}
+                    </p>
+                  )}
+                  {canEditOrDelete(category) && (
+                    <div className="category-actions">
+                      <button 
+                        className="edit-button"
+                        onClick={() => handleEditClick(category)}
+                      >
+                        Edit Category
+                      </button>
+                      <button 
+                        className="delete-button"
+                        onClick={() => handleDeleteClick(category.id)}
+                      >
+                        Delete Category
+                      </button>
+                    </div>
+                  )}
                 </>
               )}
             </div>

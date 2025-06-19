@@ -3,4 +3,6 @@ export interface Category {
   _id?: string;
   name: string;
   description?: string;
+  createdBy?: string;
+  createdByName?: string;
 } 

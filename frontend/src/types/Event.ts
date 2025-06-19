@@ -8,4 +8,6 @@ export interface Event {
   description?: string;
   categoryIds: (string | Category)[];
   imageUrl?: string;
+  createdBy?: string;
+  createdByName?: string;
 }

@@ -120,6 +120,9 @@ const EventForm: React.FC<EventFormProps> = ({
         // Handle new event creation
         const response = await fetch("http://localhost:4000/events", {
           method: "POST",
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          },
           body: formData,
         });
 
