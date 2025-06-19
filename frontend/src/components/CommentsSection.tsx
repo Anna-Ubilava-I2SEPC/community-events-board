@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
 
 interface Comment {
   _id: string;
@@ -18,6 +19,7 @@ const CommentsSection: React.FC<Props> = ({ eventId }) => {
   const [loading, setLoading] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState("");
+  const { user, isAuthenticated } = useAuth();
 
   const getUserId = (): string | null => {
     const token = localStorage.getItem("token");
@@ -28,6 +30,11 @@ const CommentsSection: React.FC<Props> = ({ eventId }) => {
     } catch {
       return null;
     }
+  };
+
+  // Check if user can edit/delete a comment (owner or admin)
+  const canEditOrDeleteComment = (comment: Comment): boolean => {
+    return !!(isAuthenticated && user && (comment.userId === user._id || user.role === 'admin'));
   };
 
   const fetchComments = async () => {
@@ -219,7 +226,7 @@ const CommentsSection: React.FC<Props> = ({ eventId }) => {
               </p>
             )}
 
-            {c.userId === getUserId() && editingCommentId !== c._id && (
+            {canEditOrDeleteComment(c) && editingCommentId !== c._id && (
               <div style={{ display: "flex", gap: "12px", marginTop: "10px" }}>
                 <button
                   onClick={() => handleEdit(c._id, c.content)}

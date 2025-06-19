@@ -40,8 +40,10 @@ const EventPage: React.FC = () => {
   const shareDescription =
     event?.description || `${event?.title} - ${event?.location}`;
 
-  // Check if current user is the creator of the event
+  // Check if current user is the creator of the event or an admin
   const isCreator = isAuthenticated && user && event && event.createdBy === user._id;
+  const isAdmin = isAuthenticated && user && user.role === 'admin';
+  const canEditOrDelete = isCreator || isAdmin;
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -411,7 +413,7 @@ const EventPage: React.FC = () => {
                   </p>
                 </div>
 
-                {isCreator && (
+                {canEditOrDelete && (
                   <div className="event-actions">
                     <button className="edit-button" onClick={handleEditClick}>
                       Edit Event
