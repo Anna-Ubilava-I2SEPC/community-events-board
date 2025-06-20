@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Event } from "../types/Event";
 import StarRating from "./StarRating";
-const apiUrl = import.meta.env.VITE_API_URL;
 
 interface EventListProps {
   events: Event[];
@@ -14,6 +13,7 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
   const [ratings, setRatings] = useState<
     Record<string, { average: number; votes: number }>
   >({});
+  const apiUrl = import.meta.env.VITE_API_URL;
   const [userRatings, setUserRatings] = useState<Record<string, number>>({});
 
   const handleCardClick = (eventId: string) => {

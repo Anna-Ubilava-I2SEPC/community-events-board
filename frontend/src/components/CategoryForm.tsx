@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import type { Category } from "../types/Category";
-const apiUrl = import.meta.env.VITE_API_URL;
 
 interface CategoryFormProps {
   onCategoryAdded?: () => void;
@@ -17,6 +16,8 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   onCancel,
   isEditing = false,
 }) => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   const [name, setName] = useState(initialCategory?.name || "");
   const [description, setDescription] = useState(
     initialCategory?.description || ""

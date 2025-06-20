@@ -5,11 +5,11 @@ import axios from "axios";
 import type { Event } from "../types/Event";
 import type { Category } from "../types/Category";
 import EventForm from "./EventForm";
-const apiUrl = import.meta.env.VITE_API_URL;
 
 const Profile: React.FC = () => {
   const { user, isAuthenticated, updateUserData, logout } = useAuth();
   const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   // Form states
   const [name, setName] = useState("");
@@ -99,7 +99,7 @@ const Profile: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.put(
-        "${apiUrl}/users/profile",
+        `${apiUrl}/users/profile`,
         { name },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -122,7 +122,7 @@ const Profile: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.put(
-        "${apiUrl}/users/change-email",
+        `${apiUrl}/users/change-email`,
         { newEmail: email, currentPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -158,7 +158,7 @@ const Profile: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        "${apiUrl}/users/change-password",
+        `${apiUrl}/users/change-password`,
         { currentPassword, newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -191,7 +191,7 @@ const Profile: React.FC = () => {
   // Fetch categories for filtering
   const fetchCategories = async () => {
     try {
-      const response = await axios.get("${apiUrl}/categories");
+      const response = await axios.get(`${apiUrl}/categories`);
       setCategories(response.data);
     } catch (err) {
       console.error("Error fetching categories:", err);

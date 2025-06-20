@@ -25,7 +25,6 @@ import NoResults from "./components/NoResults";
 import type { Event } from "./types/Event";
 import type { Category } from "./types/Category";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
-const apiUrl = import.meta.env.VITE_API_URL;
 
 // Extended Event response type for API
 interface EventsResponse {
@@ -141,6 +140,7 @@ const Navigation: React.FC = () => {
 };
 
 function AppContent() {
+  const apiUrl = import.meta.env.VITE_API_URL;
   const [events, setEvents] = useState<Event[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);

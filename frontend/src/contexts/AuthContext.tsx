@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
-const apiUrl = import.meta.env.VITE_API_URL;
 
 interface User {
   _id: string;
@@ -24,6 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const apiUrl = import.meta.env.VITE_API_URL;
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         return;
       }
 
-      const response = await axios.get("${apiUrl}/users/profile", {
+      const response = await axios.get(`${apiUrl}/users/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

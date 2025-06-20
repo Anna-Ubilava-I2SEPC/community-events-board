@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import type { Category } from "../types/Category";
 import CategoryForm from "./CategoryForm";
 import { useAuth } from "../contexts/AuthContext";
-const apiUrl = import.meta.env.VITE_API_URL;
 
 interface CategoryListProps {
   categories: Category[];
@@ -13,6 +12,8 @@ const CategoryList: React.FC<CategoryListProps> = ({
   categories,
   onCategoryUpdated,
 }) => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const { user, isAuthenticated } = useAuth();
 

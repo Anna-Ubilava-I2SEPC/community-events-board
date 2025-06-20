@@ -18,7 +18,6 @@ import CommentsSection from "./CommentsSection";
 import StarRating from "./StarRating";
 import { useAuth } from "../contexts/AuthContext";
 import "../App.css";
-const apiUrl = import.meta.env.VITE_API_URL;
 
 const EventPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -34,6 +33,7 @@ const EventPage: React.FC = () => {
   });
   const [userRating, setUserRating] = useState<number>(0);
   const [copySuccess, setCopySuccess] = useState(false);
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   // Get the current page URL for sharing
   const shareUrl = window.location.href;
@@ -42,8 +42,9 @@ const EventPage: React.FC = () => {
     event?.description || `${event?.title} - ${event?.location}`;
 
   // Check if current user is the creator of the event or an admin
-  const isCreator = isAuthenticated && user && event && event.createdBy === user._id;
-  const isAdmin = isAuthenticated && user && user.role === 'admin';
+  const isCreator =
+    isAuthenticated && user && event && event.createdBy === user._id;
+  const isAdmin = isAuthenticated && user && user.role === "admin";
   const canEditOrDelete = isCreator || isAdmin;
 
   useEffect(() => {
@@ -58,9 +59,7 @@ const EventPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(
-          `${apiUrl}/events?page=1&limit=1000`
-        );
+        const response = await fetch(`${apiUrl}/events?page=1&limit=1000`);
         if (!response.ok) {
           throw new Error("Failed to fetch events");
         }
@@ -133,7 +132,7 @@ const EventPage: React.FC = () => {
     if (!event) return;
 
     try {
-      const res = await fetch("${apiUrl}/ratings", {
+      const res = await fetch(`${apiUrl}/ratings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -146,14 +145,11 @@ const EventPage: React.FC = () => {
         setUserRating(value);
 
         // Fetch updated average and vote count
-        const ratingRes = await fetch(
-          `${apiUrl}/ratings/${event.id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+        const ratingRes = await fetch(`${apiUrl}/ratings/${event.id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
 
         if (ratingRes.ok) {
           const data = await ratingRes.json();
@@ -202,16 +198,13 @@ const EventPage: React.FC = () => {
       );
       if (updatedEvent.image) formData.append("image", updatedEvent.image);
 
-      const response = await fetch(
-        `${apiUrl}/events/${updatedEvent.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Authorization": `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: formData,
-        }
-      );
+      const response = await fetch(`${apiUrl}/events/${updatedEvent.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: formData,
+      });
 
       if (!response.ok) {
         throw new Error("Failed to update event");
@@ -246,7 +239,7 @@ const EventPage: React.FC = () => {
       const response = await fetch(`${apiUrl}/events/${event.id}`, {
         method: "DELETE",
         headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
 
@@ -419,7 +412,10 @@ const EventPage: React.FC = () => {
                     <button className="edit-button" onClick={handleEditClick}>
                       Edit Event
                     </button>
-                    <button className="delete-button" onClick={handleDeleteClick}>
+                    <button
+                      className="delete-button"
+                      onClick={handleDeleteClick}
+                    >
                       Delete Event
                     </button>
                   </div>

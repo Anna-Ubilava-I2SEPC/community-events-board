@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import type { Event } from "../types/Event";
 import type { Category } from "../types/Category";
-const apiUrl = import.meta.env.VITE_API_URL;
 
 interface EventFormProps {
   onEventAdded?: () => void;
@@ -19,6 +18,7 @@ const EventForm: React.FC<EventFormProps> = ({
   onCancel,
   isEditing = false,
 }) => {
+  const apiUrl = import.meta.env.VITE_API_URL;
   const [title, setTitle] = useState(initialEvent?.title || "");
   const [date, setDate] = useState(
     initialEvent?.date
@@ -133,7 +133,7 @@ const EventForm: React.FC<EventFormProps> = ({
         await onSubmit(updatedEvent);
       } else {
         // Handle new event creation
-        const response = await fetch("${apiUrl}/events", {
+        const response = await fetch(`${apiUrl}/events`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,

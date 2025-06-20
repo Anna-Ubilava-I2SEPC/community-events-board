@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-const apiUrl = import.meta.env.VITE_API_URL;
 
 interface Comment {
   _id: string;
@@ -15,6 +14,7 @@ interface Props {
 }
 
 const CommentsSection: React.FC<Props> = ({ eventId }) => {
+  const apiUrl = import.meta.env.VITE_API_URL;
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(false);
@@ -57,7 +57,7 @@ const CommentsSection: React.FC<Props> = ({ eventId }) => {
     setLoading(true);
 
     try {
-      const res = await fetch("${apiUrl}/comments", {
+      const res = await fetch(`${apiUrl}/comments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
