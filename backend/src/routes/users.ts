@@ -103,7 +103,10 @@ router.put(
       const existingUser = await User.findOne({
         email: newEmail.toLowerCase().trim(),
       });
-      if (existingUser && existingUser._id.toString() !== user._id.toString()) {
+      if (
+        existingUser &&
+        (existingUser._id as any).toString() !== (user._id as any).toString()
+      ) {
         res.status(400).json({ message: "Email is already in use" });
         return;
       }
