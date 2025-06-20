@@ -34,5 +34,6 @@ app.get("/ping", (_req, res) => {
 });
 
 app.listen(PORT, HOST, () => {
-  console.log(`Server running at http://${HOST}:${PORT}`);
+  console.log(`Server running at http://${HOST}:${PORT} \n 
+    local: http://localhost:4000/ping`);
 });

@@ -25,6 +25,7 @@ import NoResults from "./components/NoResults";
 import type { Event } from "./types/Event";
 import type { Category } from "./types/Category";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 // Extended Event response type for API
 interface EventsResponse {
@@ -187,9 +188,7 @@ function AppContent() {
       setError(null);
 
       const queryParams = buildQueryParams();
-      const url = `http://51.21.199.217:4000/events${
-        queryParams ? `?${queryParams}` : ""
-      }`;
+      const url = `${apiUrl}/events${queryParams ? `?${queryParams}` : ""}`;
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -223,7 +222,7 @@ function AppContent() {
   // Function to fetch categories from the API
   const fetchCategories = async () => {
     try {
-      const response = await fetch("http://51.21.199.217:4000/categories");
+      const response = await fetch(`${apiUrl}/categories`);
 
       if (!response.ok) {
         throw new Error("Failed to fetch categories");

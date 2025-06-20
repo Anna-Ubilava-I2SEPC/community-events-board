@@ -99,13 +99,14 @@ router.put(
         return;
       }
 
-      // temporarily commented because it had some error
-      // // Check if new email is already taken
-      // const existingUser = await User.findOne({ email: newEmail.toLowerCase().trim() });
-      // if (existingUser && existingUser._id.toString() !== user._id.toString()) {
-      //   res.status(400).json({ message: 'Email is already in use' });
-      //   return;
-      // }
+      // Check if new email is already taken
+      const existingUser = await User.findOne({
+        email: newEmail.toLowerCase().trim(),
+      });
+      if (existingUser && existingUser._id.toString() !== user._id.toString()) {
+        res.status(400).json({ message: "Email is already in use" });
+        return;
+      }
 
       user.email = newEmail.toLowerCase().trim();
       await user.save();

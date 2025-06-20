@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import type { Category } from "../types/Category";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 interface CategoryFormProps {
   onCategoryAdded?: () => void;
@@ -14,10 +15,12 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   initialCategory,
   onSubmit,
   onCancel,
-  isEditing = false
+  isEditing = false,
 }) => {
   const [name, setName] = useState(initialCategory?.name || "");
-  const [description, setDescription] = useState(initialCategory?.description || "");
+  const [description, setDescription] = useState(
+    initialCategory?.description || ""
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
@@ -38,7 +41,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
     const categoryData = {
       ...(initialCategory || {}),
       name,
-      description
+      description,
     };
 
     try {
@@ -49,11 +52,11 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
         await onSubmit(categoryData as Category);
       } else {
         // Handle new category creation
-        const response = await fetch("http://51.21.199.217:4000/categories", {
+        const response = await fetch(`${apiUrl}/categories`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify(categoryData),
         });
@@ -64,10 +67,10 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
 
         // Show success state
         setSubmitSuccess(true);
-        
+
         // Clear form on successful submission
         clearForm();
-        
+
         // Notify parent component that a category was added
         if (onCategoryAdded) {
           onCategoryAdded();
@@ -109,27 +112,25 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
       </label>
 
       <div className="buttons">
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           disabled={isSubmitting}
           className={submitSuccess ? "success" : ""}
         >
-          {isSubmitting ? "Submitting..." : submitSuccess ? "✓ Success!" : isEditing ? "Update Category" : "Submit Category"}
+          {isSubmitting
+            ? "Submitting..."
+            : submitSuccess
+            ? "✓ Success!"
+            : isEditing
+            ? "Update Category"
+            : "Submit Category"}
         </button>
         {isEditing ? (
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
+          <button type="button" onClick={onCancel} disabled={isSubmitting}>
             Cancel
           </button>
         ) : (
-          <button
-            type="button"
-            onClick={clearForm}
-            disabled={isSubmitting}
-          >
+          <button type="button" onClick={clearForm} disabled={isSubmitting}>
             Clear Form
           </button>
         )}
@@ -138,4 +139,4 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
   );
 };
 
-export default CategoryForm; 
+export default CategoryForm;

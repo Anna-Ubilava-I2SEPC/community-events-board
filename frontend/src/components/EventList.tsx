@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Event } from "../types/Event";
 import StarRating from "./StarRating";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 interface EventListProps {
   events: Event[];
@@ -21,7 +22,7 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
 
   const handleRating = async (eventId: string, value: number) => {
     try {
-      const res = await fetch("http://51.21.199.217:4000/ratings", {
+      const res = await fetch(`${apiUrl}/ratings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -34,14 +35,11 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
         setUserRatings((prev) => ({ ...prev, [eventId]: value }));
 
         // Fetch updated average and vote count
-        const ratingRes = await fetch(
-          `http://51.21.199.217:4000/ratings/${eventId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+        const ratingRes = await fetch(`${apiUrl}/ratings/${eventId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
 
         if (ratingRes.ok) {
           const data = await ratingRes.json();
@@ -71,7 +69,7 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
 
       for (const event of events) {
         try {
-          const res = await fetch(`http://51.21.199.217:4000/ratings/${event.id}`, {
+          const res = await fetch(`${apiUrl}/ratings/${event.id}`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
@@ -117,7 +115,7 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
               {event.imageUrl && (
                 <div className="event-image-wrapper">
                   <img
-                    src={`http://51.21.199.217:4000${event.imageUrl}`}
+                    src={`${apiUrl}${event.imageUrl}`}
                     alt={event.title}
                     className="event-image"
                     style={{ maxHeight: "180px", objectFit: "cover" }}

@@ -2,13 +2,17 @@ import React, { useState } from "react";
 import type { Category } from "../types/Category";
 import CategoryForm from "./CategoryForm";
 import { useAuth } from "../contexts/AuthContext";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 interface CategoryListProps {
   categories: Category[];
   onCategoryUpdated?: () => void;
 }
 
-const CategoryList: React.FC<CategoryListProps> = ({ categories, onCategoryUpdated }) => {
+const CategoryList: React.FC<CategoryListProps> = ({
+  categories,
+  onCategoryUpdated,
+}) => {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const { user, isAuthenticated } = useAuth();
 
@@ -17,7 +21,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onCategoryUpdat
     return isAuthenticated && user && category.createdBy === user._id;
   };
 
-  const isAdmin = isAuthenticated && user && user.role === 'admin';
+  const isAdmin = isAuthenticated && user && user.role === "admin";
 
   const canEditOrDelete = (category: Category) => {
     return isCreator(category) || isAdmin;
@@ -33,14 +37,17 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onCategoryUpdat
 
   const handleEditSubmit = async (updatedCategory: Category) => {
     try {
-      const response = await fetch(`http://51.21.199.217:4000/categories/${updatedCategory.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(updatedCategory),
-      });
+      const response = await fetch(
+        `${apiUrl}/categories/${updatedCategory.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(updatedCategory),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to update category");
@@ -62,10 +69,10 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onCategoryUpdat
     }
 
     try {
-      const response = await fetch(`http://51.21.199.217:4000/categories/${categoryId}`, {
+      const response = await fetch(`${apiUrl}/categories/${categoryId}`, {
         method: "DELETE",
         headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
 
@@ -104,7 +111,9 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onCategoryUpdat
                 <>
                   <h3>{category.name}</h3>
                   {category.description && (
-                    <p className="category-description">{category.description}</p>
+                    <p className="category-description">
+                      {category.description}
+                    </p>
                   )}
                   {category.createdByName && (
                     <p className="category-creator">
@@ -113,13 +122,13 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onCategoryUpdat
                   )}
                   {canEditOrDelete(category) && (
                     <div className="category-actions">
-                      <button 
+                      <button
                         className="edit-button"
                         onClick={() => handleEditClick(category)}
                       >
                         Edit Category
                       </button>
-                      <button 
+                      <button
                         className="delete-button"
                         onClick={() => handleDeleteClick(category.id)}
                       >
@@ -137,4 +146,4 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, onCategoryUpdat
   );
 };
 
-export default CategoryList; 
+export default CategoryList;

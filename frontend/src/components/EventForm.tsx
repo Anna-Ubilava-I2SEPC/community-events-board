@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import type { Event } from "../types/Event";
 import type { Category } from "../types/Category";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 interface EventFormProps {
   onEventAdded?: () => void;
@@ -49,7 +50,7 @@ const EventForm: React.FC<EventFormProps> = ({
     const fetchCategories = async () => {
       try {
         setCategoriesLoading(true);
-        const response = await fetch("http://51.21.199.217:4000/categories");
+        const response = await fetch(`${apiUrl}/categories`);
         if (!response.ok) {
           throw new Error("Failed to fetch categories");
         }
@@ -132,7 +133,7 @@ const EventForm: React.FC<EventFormProps> = ({
         await onSubmit(updatedEvent);
       } else {
         // Handle new event creation
-        const response = await fetch("http://51.21.199.217:4000/events", {
+        const response = await fetch("${apiUrl}/events", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,

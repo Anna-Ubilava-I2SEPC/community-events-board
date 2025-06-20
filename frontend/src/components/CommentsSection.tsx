@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 interface Comment {
   _id: string;
@@ -43,7 +44,7 @@ const CommentsSection: React.FC<Props> = ({ eventId }) => {
 
   const fetchComments = async () => {
     try {
-      const res = await fetch(`http://51.21.199.217:4000/comments/${eventId}`);
+      const res = await fetch(`${apiUrl}/comments/${eventId}`);
       const data = await res.json();
       setComments(data);
     } catch (error) {
@@ -56,7 +57,7 @@ const CommentsSection: React.FC<Props> = ({ eventId }) => {
     setLoading(true);
 
     try {
-      const res = await fetch("http://51.21.199.217:4000/comments", {
+      const res = await fetch("${apiUrl}/comments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -84,7 +85,7 @@ const CommentsSection: React.FC<Props> = ({ eventId }) => {
     if (!window.confirm("Delete this comment?")) return;
 
     try {
-      const res = await fetch(`http://51.21.199.217:4000/comments/${commentId}`, {
+      const res = await fetch(`${apiUrl}/comments/${commentId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -109,7 +110,7 @@ const CommentsSection: React.FC<Props> = ({ eventId }) => {
 
   const handleSaveEdit = async (commentId: string) => {
     try {
-      const res = await fetch(`http://51.21.199.217:4000/comments/${commentId}`, {
+      const res = await fetch(`${apiUrl}/comments/${commentId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
