@@ -9,8 +9,7 @@ import ratingsRouter from "./routes/ratings";
 import { connectDB } from "./config/database";
 
 const app = express();
-const PORT = process.env.PORT ? Number(process.env.PORT) : 4000;
-const HOST = "0.0.0.0"; // <-- Listens on all network interfaces
+const PORT = process.env.PORT || 4000;
 
 // Connect to MongoDB
 connectDB().catch(console.error);
@@ -33,7 +32,7 @@ app.get("/ping", (_req, res) => {
   res.send("pong");
 });
 
-app.listen(PORT, HOST, () => {
-  console.log(`Server running at http://${HOST}:${PORT} \n 
+app.listen(PORT, () => {
+  console.log(`Server running at port :${PORT} \n 
     local: http://localhost:4000/ping`);
 });
