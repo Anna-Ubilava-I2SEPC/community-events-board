@@ -25,6 +25,7 @@ import NoResults from "./components/NoResults";
 import type { Event } from "./types/Event";
 import type { Category } from "./types/Category";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { ToastContainer } from "react-toastify";
 
 // Extended Event response type for API
 interface EventsResponse {
@@ -539,6 +540,7 @@ function AppContent() {
               path="/add-event"
               element={
                 <ProtectedRoute>
+                  <ToastContainer />
                   <AddEventPage />
                 </ProtectedRoute>
               }

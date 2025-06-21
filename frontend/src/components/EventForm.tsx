@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import type { Event } from "../types/Event";
 import type { Category } from "../types/Category";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface EventFormProps {
   onEventAdded?: () => void;
@@ -166,6 +168,16 @@ const EventForm: React.FC<EventFormProps> = ({
     } finally {
       setIsSubmitting(false);
     }
+
+    toast.success("Event added successfully!", {
+      position: "top-right",
+      autoClose: 3000, // close after 3 seconds
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
   };
 
   const handleCategoryChange = (categoryId: string) => {
