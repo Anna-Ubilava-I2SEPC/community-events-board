@@ -373,10 +373,6 @@ button[type="button"]:hover {
     display: flex;
   }
 
-  .mobile-nav-toggle {
-    display: block;
-  }
-
   .nav-link {
     padding: 0.75rem 1rem;
     width: 100%;
@@ -790,9 +786,10 @@ button[type="button"]:hover {
 }
 
 .nav-container {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1039,16 +1036,6 @@ form,
 }
 
 .App
-/* Mobile Navigation */
-.mobile-nav-toggle {
-  display: none;
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0.5rem;
-}
 
 /* social sharing buttons css */
 .social-sharing-section {
@@ -1785,4 +1772,79 @@ body.dark .social-sharing-section {
 body.dark .form-heading,
 body.dark .category-list h2 {
   color: #000000;
+}
+
+/* Right-aligned ☰ button */
+.nav-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.mobile-nav-toggle {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-nav-toggle {
+    display: block;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .mobile-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--nav-background, #1a1a1a);
+    color: white;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 2rem;
+  }
+
+  .close-mobile-menu {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 2rem;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+  }
+
+  .mobile-nav-links {
+    list-style: none;
+    padding: 0;
+    text-align: center;
+  }
+
+  .mobile-nav-links li {
+    font-size: 1.5rem;
+  }
+
+  .mobile-nav-links a,
+  .mobile-nav-links button {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+  }
 }

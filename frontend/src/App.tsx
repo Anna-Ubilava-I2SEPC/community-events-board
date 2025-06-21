@@ -57,6 +57,8 @@ const Navigation: React.FC = () => {
   };
   const { theme, toggleTheme } = useTheme();
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <nav className="main-nav">
       <div className="nav-container">
@@ -66,6 +68,18 @@ const Navigation: React.FC = () => {
             Events Board
           </Link>
         </div>
+
+        {/* ☰ Icon */}
+        <div className="nav-actions">
+          <button
+            className="mobile-nav-toggle"
+            onClick={() => setIsMobileMenuOpen(true)}
+            aria-label="Open mobile menu"
+          >
+            ☰
+          </button>
+        </div>
+
         <ul className="nav-links">
           <li>
             <Link to="/" className="nav-link">
@@ -135,6 +149,88 @@ const Navigation: React.FC = () => {
           </li>
         </ul>
       </div>
+
+      {/* Full-screen Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="mobile-menu-overlay">
+          <button
+            className="close-mobile-menu"
+            onClick={() => setIsMobileMenuOpen(false)}
+            aria-label="Close mobile menu"
+          >
+            ✕
+          </button>
+          <ul className="mobile-nav-links">
+            <li>
+              <Link to="/" onClick={() => setIsMobileMenuOpen(false)}>
+                🏠 Home
+              </Link>
+            </li>
+            <li>
+              <Link to="/add-event" onClick={() => setIsMobileMenuOpen(false)}>
+                ➕ Add Event
+              </Link>
+            </li>
+            <li>
+              <Link to="/categories" onClick={() => setIsMobileMenuOpen(false)}>
+                📂 Categories
+              </Link>
+            </li>
+            {!loading &&
+              (isAuthenticated ? (
+                <>
+                  <li>
+                    <Link
+                      to="/profile"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      👤 {user?.name || "Profile"}
+                    </Link>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                    >
+                      🚪 Logout
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    <Link
+                      to="/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      🔑 Login
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/register"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      👤 Register
+                    </Link>
+                  </li>
+                </>
+              ))}
+            <li>
+              <button
+                onClick={() => {
+                  toggleTheme();
+                  setIsMobileMenuOpen(false);
+                }}
+              >
+                🌓 {theme === "dark" ? "Light Mode" : "Dark Mode"}
+              </button>
+            </li>
+          </ul>
+        </div>
+      )}
     </nav>
   );
 };
