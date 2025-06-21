@@ -426,7 +426,6 @@ const EventPage: React.FC = () => {
                   <div className="social-buttons">
                     <FacebookShareButton
                       url={shareUrl}
-                      quote={`Check out this event: ${event.title}`}
                       hashtag="#CommunityEvents"
                     >
                       <FacebookIcon size={32} round />
