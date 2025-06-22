@@ -31,6 +31,7 @@ const deleteImageFile = async (imageUrl: string): Promise<void> => {
 // GET /events - Get all events with search, filtering, and sorting
 router.get("/", (async (req, res) => {
   try {
+    console.log("QUERY PARAMS:", req.query);
     const {
       search,
       categories, // comma-separated category IDs
@@ -41,6 +42,7 @@ router.get("/", (async (req, res) => {
       sortOrder = "asc",
       limit = 50,
       page = 1,
+      date,
     } = req.query;
 
     let query = Event.find();
@@ -72,7 +74,12 @@ router.get("/", (async (req, res) => {
     }
 
     // Date range filtering
-    if (startDate || endDate) {
+    // Exact date filtering (for calendar)
+    if (date && typeof date === "string") {
+      query = query.find({ date: date });
+    }
+
+    if (!date && (startDate || endDate)) {
       const dateQuery: any = {};
       if (startDate && typeof startDate === "string") {
         dateQuery.$gte = startDate;
@@ -133,9 +140,14 @@ router.get("/", (async (req, res) => {
       .populate("categoryIds")
       .exec();
 
+    const mappedEvents = events.map((event) => {
+      const obj = event.toObject();
+      return { ...obj, id: obj._id, _id: undefined };
+    });
+
     // Return events with pagination info
     res.status(200).json({
-      events,
+      events: mappedEvents,
       pagination: {
         current: pageNum,
         total: Math.ceil(total / limitNum),
@@ -233,7 +245,10 @@ router.get("/my", auth, (async (req: any, res) => {
 
     // Pagination
     const pageNum = Math.max(1, parseInt(page as string) || 1);
-    const limitNum = Math.max(1, Math.min(100, parseInt(limit as string) || 50));
+    const limitNum = Math.max(
+      1,
+      Math.min(100, parseInt(limit as string) || 50)
+    );
     const skip = (pageNum - 1) * limitNum;
 
     const totalQuery = Event.find({ createdBy: req.user.userId });
@@ -348,8 +363,14 @@ router.put("/:id", auth, upload.single("image"), (async (req: any, res) => {
     }
 
     // Check if the user is the creator of the event or an admin
-    if (event.createdBy && event.createdBy.toString() !== req.user.userId && req.user.role !== 'admin') {
-      return res.status(403).json({ error: "You can only edit events that you created" });
+    if (
+      event.createdBy &&
+      event.createdBy.toString() !== req.user.userId &&
+      req.user.role !== "admin"
+    ) {
+      return res
+        .status(403)
+        .json({ error: "You can only edit events that you created" });
     }
 
     let parsedCategoryIds: mongoose.Types.ObjectId[] = [];
@@ -425,8 +446,14 @@ router.delete("/:id", auth, (async (req: any, res) => {
     }
 
     // Check if the user is the creator of the event or an admin
-    if (event.createdBy && event.createdBy.toString() !== req.user.userId && req.user.role !== 'admin') {
-      return res.status(403).json({ error: "You can only delete events that you created" });
+    if (
+      event.createdBy &&
+      event.createdBy.toString() !== req.user.userId &&
+      req.user.role !== "admin"
+    ) {
+      return res
+        .status(403)
+        .json({ error: "You can only delete events that you created" });
     }
 
     // Delete the image file if it exists
