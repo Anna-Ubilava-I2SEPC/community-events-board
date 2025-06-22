@@ -26,6 +26,7 @@ import type { Event } from "./types/Event";
 import type { Category } from "./types/Category";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ToastContainer } from "react-toastify";
+import CalendarPage from "./components/CalendarPage";
 
 // Extended Event response type for API
 interface EventsResponse {
@@ -86,6 +87,12 @@ const Navigation: React.FC = () => {
             <Link to="/" className="nav-link">
               <span className="nav-icon">🏠 </span>
               Home
+            </Link>
+          </li>
+          <li>
+            <Link to="/calendar" className="nav-link">
+              <span className="nav-icon">📅 </span>
+              Calendar
             </Link>
           </li>
           <li>
@@ -165,6 +172,11 @@ const Navigation: React.FC = () => {
             <li>
               <Link to="/" onClick={() => setIsMobileMenuOpen(false)}>
                 🏠 Home
+              </Link>
+            </li>
+            <li>
+              <Link to="/calendar" onClick={() => setIsMobileMenuOpen(false)}>
+                📅 Calendar
               </Link>
             </li>
             <li>
@@ -535,6 +547,7 @@ function AppContent() {
         <div className="app-content">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/calendar" element={<CalendarPage />} />
             <Route path="/events/:id" element={<EventPage />} />
             <Route
               path="/add-event"
