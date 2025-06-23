@@ -189,4 +189,16 @@ describe("Events API", () => {
       expect(res.body.location).toBe("Kutaisi");
     });
   });
+
+  afterAll(async () => {
+    if (mongoose.connection.readyState === 1 && mongoose.connection.db) {
+      const db = mongoose.connection.db;
+      await db
+        .collection("events")
+        .deleteMany({ title: "Updated Event Title" });
+      await db.collection("users").deleteMany({ email: "testuser@events.com" });
+    }
+
+    await mongoose.connection.close();
+  });
 });
