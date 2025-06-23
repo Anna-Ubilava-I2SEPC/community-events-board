@@ -111,4 +111,82 @@ describe("Events API", () => {
       expect(res.body).toHaveProperty("createdByName");
     });
   });
+
+  describe("PUT /events/:id", () => {
+    let token: string;
+    let eventId: string;
+
+    beforeAll(async () => {
+      // Create a test user
+      const userRes = await request(app).post("/users/register").send({
+        name: "Test User",
+        email: "testuser@events.com",
+        password: "test1234",
+      });
+
+      // Login to get token
+      const loginRes = await request(app).post("/users/login").send({
+        email: "testuser@events.com",
+        password: "test1234",
+      });
+
+      token = loginRes.body.token;
+
+      // Create a test event
+      const createRes = await request(app)
+        .post("/events")
+        .set("Authorization", `Bearer ${token}`)
+        .field("title", "Original Title")
+        .field("date", "2025-06-30")
+        .field("location", "Tbilisi");
+
+      eventId = createRes.body._id;
+    });
+
+    it("should return 401 if no token is provided", async () => {
+      const res = await request(app)
+        .put(`/events/${eventId}`)
+        .send({ title: "Unauthorized Update" });
+
+      expect(res.status).toBe(401);
+      expect(res.body).toHaveProperty(
+        "message",
+        "No authentication token, access denied"
+      );
+    });
+
+    it("should return 400 for invalid event ID", async () => {
+      const res = await request(app)
+        .put(`/events/invalid-id`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ title: "Bad ID" });
+
+      expect(res.status).toBe(400);
+      expect(res.body).toHaveProperty("error", "Invalid event ID");
+    });
+
+    it("should return 404 for non-existent event", async () => {
+      const fakeId = "60f8c46b2f8fb814c89be999";
+      const res = await request(app)
+        .put(`/events/${fakeId}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ title: "Not Found" });
+
+      expect(res.status).toBe(404);
+      expect(res.body).toHaveProperty("error", "Event not found");
+    });
+
+    it("should update the event when valid token and data are provided", async () => {
+      const res = await request(app)
+        .put(`/events/${eventId}`)
+        .set("Authorization", `Bearer ${token}`)
+        .field("title", "Updated Title")
+        .field("date", "2025-07-01")
+        .field("location", "Kutaisi");
+
+      expect(res.status).toBe(200);
+      expect(res.body.title).toBe("Updated Title");
+      expect(res.body.location).toBe("Kutaisi");
+    });
+  });
 });
