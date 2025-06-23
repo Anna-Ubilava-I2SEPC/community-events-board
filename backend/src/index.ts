@@ -32,7 +32,11 @@ app.get("/ping", (_req, res) => {
   res.send("pong");
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running at port :${PORT} \n 
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running at port :${PORT} \n 
     local: http://localhost:4000/ping`);
-});
+  });
+}
+
+export default app;
