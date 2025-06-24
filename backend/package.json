@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "build": "tsc",
+    "build": "npm test tsc",
     "start": "node dist/index.js",
     "create-admin": "ts-node src/scripts/createAdmin.ts",
     "test": "jest"
