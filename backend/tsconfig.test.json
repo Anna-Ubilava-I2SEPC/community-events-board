@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["jest"]
+  },
+  "include": ["src", "tests"]
+}
+
+// to run Jest only (faster during local dev): npm test
+// Type-check everything, then run tests (use before pushing or CI): npm run test:build
