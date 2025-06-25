@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema, Types } from 'mongoose';
+import mongoose, { Document, Schema, Types } from "mongoose";
 
 export interface IEvent extends Document {
   title: string;
@@ -16,10 +16,10 @@ const eventSchema = new Schema<IEvent>({
   date: { type: String, required: true },
   location: { type: String, required: true, trim: true },
   description: { type: String, trim: true },
-  categoryIds: [{ type: Schema.Types.ObjectId, ref: 'Category' }],
+  categoryIds: [{ type: Schema.Types.ObjectId, ref: "Category" }],
   imageUrl: { type: String },
-  createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  createdByName: { type: String, required: true, trim: true }
+  createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  createdByName: { type: String, required: true, trim: true },
 });
 
-export const Event = mongoose.model<IEvent>('Event', eventSchema);
+export const Event = mongoose.model<IEvent>("Event", eventSchema);

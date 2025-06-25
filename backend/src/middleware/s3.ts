@@ -2,13 +2,14 @@ import multer from "multer";
 import multerS3 from "multer-s3";
 import { s3 } from "../config/s3";
 
-const bucket = process.env.AWS_BUCKET_NAME!;
+const bucketName = process.env.AWS_BUCKET_NAME!;
+console.log("S3 bucket is:", process.env.AWS_BUCKET_NAME);
 
 export const upload = multer({
   storage: multerS3({
     s3,
-    bucket,
-    acl: "public-read",
+    bucket: bucketName,
+    acl: "public-read", // or private if you use signed URLs
     metadata: (req, file, cb) => {
       cb(null, { fieldName: file.fieldname });
     },
