@@ -21,7 +21,9 @@
     "noUnusedParameters": false,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    "types": ["vitest", "@testing-library/jest-dom"]
   },
-  "include": ["src"]
+  "include": ["src", "tests"]
 }
