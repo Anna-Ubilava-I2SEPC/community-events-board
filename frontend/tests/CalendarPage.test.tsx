@@ -12,7 +12,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  vi.restoreAllMocks(); // 🧼 Clean up
+  vi.restoreAllMocks();
 });
 
 describe("CalendarPage", () => {
