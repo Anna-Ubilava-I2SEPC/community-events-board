@@ -22,8 +22,8 @@ const server = http.createServer(app);
 // Initialize Socket.IO
 const io = new SocketIOServer(server, {
   cors: {
-    origin:
-      process.env.CLIENT_URL || "https://main.d1r03isbgzcqje.amplifyapp.com/",
+    origin: "https://main.d1r03isbgzcqje.amplifyapp.com/",
+    methods: ["GET", "POST", "PUT"],
   },
 });
 
@@ -33,7 +33,12 @@ export { io };
 connectDB().catch(console.error);
 
 // Enable CORS for frontend communication
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://main.d1r03isbgzcqje.amplifyapp.com/",
+    credentials: true,
+  })
+);
 
 app.use(express.json()); // Middleware to parse JSON
 
