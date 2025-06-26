@@ -325,6 +325,23 @@ button[type="button"]:hover {
   font-weight: 600;
   border: 1px solid #b3e0f2;
 }
+
+.event-page-content {
+  padding: 1rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.event-image-large {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: 8px;
+  object-fit: cover;
+  max-height: 400px;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .home-layout {
