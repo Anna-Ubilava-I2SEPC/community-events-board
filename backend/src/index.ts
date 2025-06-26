@@ -22,7 +22,7 @@ const server = http.createServer(app);
 // Initialize Socket.IO
 const io = new SocketIOServer(server, {
   cors: {
-    origin: "https://main.d1r03isbgzcqje.amplifyapp.com/",
+    origin: "https://main.d1r03isbgzcqje.amplifyapp.com",
     methods: ["GET", "POST", "PUT"],
   },
 });
@@ -35,7 +35,7 @@ connectDB().catch(console.error);
 // Enable CORS for frontend communication
 app.use(
   cors({
-    origin: "https://main.d1r03isbgzcqje.amplifyapp.com/",
+    origin: "https://main.d1r03isbgzcqje.amplifyapp.com",
     credentials: true,
   })
 );
