@@ -2,13 +2,11 @@ import { Router, RequestHandler } from "express";
 import { Event } from "../models/event";
 import { Category } from "../models/category";
 import { User } from "../models/User";
-import { upload } from "../middleware/s3";
+import { upload } from "../config/upload";
 import { auth } from "../middleware/auth";
 import mongoose from "mongoose";
 import fs from "fs";
 import path from "path";
-import { s3 } from "../config/s3";
-import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 const router = Router();
 
@@ -334,7 +332,7 @@ router.post("/", auth, upload.single("image"), (async (req: any, res) => {
       location: location.trim(),
       description: description ? description.trim() : undefined,
       categoryIds: parsedCategoryIds,
-      imageUrl: req.file ? (req.file as any).location : undefined,
+      imageUrl: req.file ? `/uploads/${req.file.filename}` : undefined,
       createdBy: req.user.userId,
       createdByName: user.name,
     });
@@ -342,9 +340,8 @@ router.post("/", auth, upload.single("image"), (async (req: any, res) => {
     await event.save();
     const populated = await event.populate("categoryIds");
     res.status(201).json(populated);
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error creating event:", error);
-    console.error("STACK:", error.stack);
     res.status(500).json({ error: "Failed to create event" });
   }
 }) as RequestHandler);
@@ -352,64 +349,81 @@ router.post("/", auth, upload.single("image"), (async (req: any, res) => {
 // PUT /events/:id - Update an existing event (authenticated, only by creator)
 router.put("/:id", auth, upload.single("image"), (async (req: any, res) => {
   try {
-    const eventId = req.params.id;
+    const { id } = req.params;
+    const { title, date, location, description, categoryIds, removeImage } =
+      req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ error: "Invalid event ID" });
     }
 
-    const event = await Event.findById(eventId);
+    const event = await Event.findById(id);
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
     }
 
-    // Optional: only allow the owner to update
-    if (event.createdBy.toString() !== req.user.userId) {
-      return res.status(403).json({ error: "Unauthorized" });
+    // Check if the user is the creator of the event or an admin
+    if (
+      event.createdBy &&
+      event.createdBy.toString() !== req.user.userId &&
+      req.user.role !== "admin"
+    ) {
+      return res
+        .status(403)
+        .json({ error: "You can only edit events that you created" });
     }
 
-    // Update fields
-    const { title, date, location, description, categoryIds } = req.body;
-
-    if (title) event.title = title.trim();
-    if (date) event.date = date;
-    if (location) event.location = location.trim();
-    if (description) event.description = description.trim();
-
+    let parsedCategoryIds: mongoose.Types.ObjectId[] = [];
     if (categoryIds) {
-      const parsed = JSON.parse(categoryIds);
-      if (!Array.isArray(parsed)) {
-        return res.status(400).json({ error: "categoryIds must be an array" });
-      }
-      event.categoryIds = parsed.map(
-        (id: string) => new mongoose.Types.ObjectId(id)
-      );
-    }
-
-    // Handle image replacement
-    if (req.file) {
-      // Optional: delete old image from S3
-      if (event.imageUrl && process.env.AWS_BUCKET_NAME) {
-        const key = event.imageUrl.split("/").pop(); // assumes flat storage
-        try {
-          await s3.send(
-            new DeleteObjectCommand({
-              Bucket: process.env.AWS_BUCKET_NAME,
-              Key: key,
-            })
-          );
-        } catch (err) {
-          console.warn("Failed to delete old image:", err);
+      try {
+        const arr = JSON.parse(categoryIds);
+        if (!Array.isArray(arr)) {
+          return res
+            .status(400)
+            .json({ error: "categoryIds must be an array" });
         }
+        // Validate each category ID
+        for (const id of arr) {
+          if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res
+              .status(400)
+              .json({ error: `Invalid category ID: ${id}` });
+          }
+        }
+        parsedCategoryIds = arr.map((id) => new mongoose.Types.ObjectId(id));
+      } catch (error) {
+        return res.status(400).json({
+          error:
+            "Invalid categoryIds format. Must be a JSON array of valid MongoDB ObjectIds.",
+        });
       }
-
-      // Save new image URL
-      event.imageUrl = (req.file as any).location;
     }
+
+    // Handle image operations
+    const shouldRemoveImage = removeImage === "true" || removeImage === true;
+
+    // If a new image is uploaded or we want to remove the current image, delete the old one
+    if ((req.file || shouldRemoveImage) && event.imageUrl) {
+      await deleteImageFile(event.imageUrl);
+    }
+
+    event.title = title.trim();
+    event.date = date;
+    event.location = location.trim();
+    event.description = description ? description.trim() : undefined;
+    event.categoryIds = parsedCategoryIds;
+
+    // Update image URL based on the operation
+    if (req.file) {
+      event.imageUrl = `/uploads/${req.file.filename}`;
+    } else if (shouldRemoveImage) {
+      event.imageUrl = undefined;
+    }
+    // If neither new image nor remove image, keep the existing imageUrl
 
     await event.save();
     const populated = await event.populate("categoryIds");
-    res.json(populated);
+    res.status(200).json(populated);
   } catch (error) {
     console.error("Error updating event:", error);
     res.status(500).json({ error: "Failed to update event" });
