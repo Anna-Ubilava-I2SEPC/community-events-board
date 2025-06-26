@@ -7,7 +7,9 @@
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["jest"],
+    "typeRoots": ["./node_modules/@types"]
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "tests", "types"]
