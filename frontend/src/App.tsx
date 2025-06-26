@@ -27,6 +27,8 @@ import type { Category } from "./types/Category";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ToastContainer } from "react-toastify";
 import CalendarPage from "./components/CalendarPage";
+import { io } from "socket.io-client";
+import { socket } from "./utils/socket";
 
 // Extended Event response type for API
 interface EventsResponse {
@@ -358,6 +360,34 @@ function AppContent() {
   // Fetch categories when component mounts
   useEffect(() => {
     fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    // Handle real-time updates from the server
+    const handleEventCreated = (newEvent: Event) => {
+      setEvents((prev) => [newEvent, ...prev]);
+    };
+
+    const handleEventUpdated = (updatedEvent: Event) => {
+      setEvents((prev) =>
+        prev.map((e) => (e.id === updatedEvent.id ? updatedEvent : e))
+      );
+    };
+
+    const handleEventDeleted = (deletedEventId: string) => {
+      setEvents((prev) => prev.filter((e) => e.id !== deletedEventId));
+    };
+
+    socket.on("eventCreated", handleEventCreated);
+    socket.on("eventUpdated", handleEventUpdated);
+    socket.on("eventDeleted", handleEventDeleted);
+
+    // Cleanup on unmount
+    return () => {
+      socket.off("eventCreated", handleEventCreated);
+      socket.off("eventUpdated", handleEventUpdated);
+      socket.off("eventDeleted", handleEventDeleted);
+    };
   }, []);
 
   // Search handlers

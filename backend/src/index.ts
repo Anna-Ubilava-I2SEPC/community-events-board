@@ -3,6 +3,9 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 import path from "path";
+import http from "http";
+import { Server as SocketIOServer } from "socket.io";
+
 import eventsRouter from "./routes/events";
 import usersRouter from "./routes/users";
 import categoriesRouter from "./routes/categories";
@@ -13,6 +16,19 @@ import { connectDB } from "./config/database";
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// Create HTTP server
+const server = http.createServer(app);
+
+// Initialize Socket.IO
+const io = new SocketIOServer(server, {
+  cors: {
+    origin:
+      process.env.CLIENT_URL || "https://main.d1r03isbgzcqje.amplifyapp.com/",
+  },
+});
+
+export { io };
+
 // Connect to MongoDB
 connectDB().catch(console.error);
 
@@ -20,9 +36,6 @@ connectDB().catch(console.error);
 app.use(cors());
 
 app.use(express.json()); // Middleware to parse JSON
-
-// Serve static files from uploads directory
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.use("/events", eventsRouter); // Mount the events route
 app.use("/users", usersRouter); // Mount the users route
@@ -34,10 +47,18 @@ app.get("/ping", (_req, res) => {
   res.send("pong");
 });
 
+// Only start server if not being imported for tests
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`Server running at port :${PORT} \n 
-    local: http://localhost:4000/ping`);
+  server.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+  });
+
+  io.on("connection", (socket) => {
+    console.log("🔌 User connected");
+
+    socket.on("disconnect", () => {
+      console.log("❌ User disconnected");
+    });
   });
 }
 
