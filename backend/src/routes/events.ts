@@ -7,6 +7,7 @@ import { auth } from "../middleware/auth";
 import mongoose from "mongoose";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { s3 } from "../config/s3";
+import { io } from "../index";
 
 const router = Router();
 
@@ -355,6 +356,7 @@ router.post("/", auth, upload.single("image"), (async (req: any, res) => {
 
     await event.save();
     const populated = await event.populate("categoryIds");
+    io.emit("eventCreated", populated); // Emit real-time event to all connected clients
     res.status(201).json(populated);
   } catch (error) {
     console.error("Error creating event:", error);
@@ -440,6 +442,7 @@ router.put("/:id", auth, upload.single("image"), (async (req: any, res) => {
 
     await event.save();
     const populated = await event.populate("categoryIds");
+    io.emit("eventUpdated", populated);
     res.status(200).json(populated);
   } catch (error) {
     console.error("Error updating event:", error);
@@ -480,6 +483,7 @@ router.delete("/:id", auth, (async (req: any, res) => {
 
     // Delete the event from the database
     await Event.findByIdAndDelete(id);
+    io.emit("eventDeleted", { id });
     res.status(200).json({ message: "Event deleted successfully" });
   } catch (error) {
     console.error("Error deleting event:", error);
