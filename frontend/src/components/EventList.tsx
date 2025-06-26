@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import type { Event } from "../types/Event";
 import StarRating from "./StarRating";
 
-
 interface EventListProps {
   events: Event[];
   onEventUpdated?: () => void;
@@ -116,7 +115,7 @@ const EventList: React.FC<EventListProps> = ({ events, onEventUpdated }) => {
               {event.imageUrl && (
                 <div className="event-image-wrapper">
                   <img
-                    src={`${apiUrl}${event.imageUrl}`}
+                    src={`${event.imageUrl}`}
                     alt={event.title}
                     className="event-image"
                     style={{ maxHeight: "180px", objectFit: "cover" }}
