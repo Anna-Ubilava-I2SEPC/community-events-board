@@ -1,1 +1,4 @@
 node_modules
+# Local development & test env files
+.env.local
+.env.test

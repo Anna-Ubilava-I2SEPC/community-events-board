@@ -1,8 +1,6 @@
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 
-const testApiUrl = "http://localhost:3000"; // mock or dummy API
-
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -13,8 +11,5 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: "./src/setupTests.ts",
-  },
-  define: {
-    "import.meta.env.VITE_API_URL": JSON.stringify(testApiUrl),
   },
 });
