@@ -3,6 +3,7 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { Link } from "react-router-dom";
 import "./CalendarPage.css";
+import "../App.css";
 import type { Event } from "../types/Event";
 
 const apiUrl = import.meta.env.VITE_API_URL;
@@ -101,13 +102,47 @@ const CalendarPage: React.FC = () => {
             {error && <p className="error">{error}</p>}
 
             {!loading && !error && events.length > 0 ? (
-              <ul className="event-list">
+              <div className="events-grid">
                 {events.map((event) => (
-                  <li key={event.id}>
-                    <Link to={`/events/${event.id}`}>{event.title}</Link>
-                  </li>
+                  <div
+                    key={event.id}
+                    className="event-card event-card-clickable"
+                    onClick={() => {
+                      window.location.href = `/events/${event.id}`;
+                    }}
+                  >
+                    {event.imageUrl && (
+                      <div className="event-image-wrapper">
+                        <img
+                          src={event.imageUrl}
+                          alt={event.title}
+                          className="event-image"
+                          style={{ maxHeight: "180px", objectFit: "cover" }}
+                        />
+                      </div>
+                    )}
+
+                    <div className="event-card-content">
+                      <h3>{event.title}</h3>
+
+                      <div className="event-details">
+                        <p className="event-date">
+                          <strong>📅 Date:</strong>{" "}
+                          {new Date(event.date).toLocaleDateString("en-US", {
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </p>
+                        <p className="event-location">
+                          <strong>📍 Location:</strong> {event.location}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </ul>
+              </div>
             ) : (
               !loading &&
               !error && (
