@@ -2,31 +2,44 @@ import { Router, RequestHandler } from "express";
 import { Event } from "../models/event";
 import { Category } from "../models/category";
 import { User } from "../models/User";
-import { upload } from "../middleware/s3";
+import { upload } from "../config/upload"; // This now uses S3
 import { auth } from "../middleware/auth";
 import mongoose from "mongoose";
-import fs from "fs";
-import path from "path";
-import { s3 } from "../config/s3";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { s3 } from "../config/s3";
 
 const router = Router();
 
-// Utility function to delete image file
+// Utility function to delete image file from S3
 const deleteImageFile = async (imageUrl: string): Promise<void> => {
-  // Only delete if the imageUrl is a local file (starts with /uploads/)
-  if (imageUrl && imageUrl.startsWith("/uploads/")) {
-    const filename = path.basename(imageUrl);
-    const imagePath = path.join(process.cwd(), "uploads", filename);
-    try {
-      // Check if file exists before trying to delete it
-      await fs.promises.access(imagePath);
-      await fs.promises.unlink(imagePath);
-      console.log(`Successfully deleted image: ${filename}`);
-    } catch (error) {
-      console.error(`Error deleting image file (${filename}):`, error);
-      // Don't throw error - we want to continue with the operation even if file deletion fails
+  try {
+    // Extract the key from the S3 URL
+    // S3 URLs typically look like: https://bucket-name.s3.region.amazonaws.com/key
+    // or https://s3.region.amazonaws.com/bucket-name/key
+    let key: string;
+
+    if (imageUrl.includes("amazonaws.com")) {
+      // For S3 URLs, extract the key (filename)
+      const urlParts = imageUrl.split("/");
+      key = urlParts[urlParts.length - 1]; // Get the last part (filename)
+    } else if (imageUrl.startsWith("/uploads/")) {
+      // Handle legacy local URLs that might still exist in database
+      key = imageUrl.replace("/uploads/", "");
+    } else {
+      // If it's already just a key/filename
+      key = imageUrl;
     }
+
+    const deleteParams = {
+      Bucket: process.env.AWS_BUCKET_NAME!,
+      Key: key,
+    };
+
+    await s3.send(new DeleteObjectCommand(deleteParams));
+    console.log(`Successfully deleted image from S3: ${key}`);
+  } catch (error) {
+    console.error(`Error deleting image file from S3 (${imageUrl}):`, error);
+    // Don't throw error - we want to continue with the operation even if file deletion fails
   }
 };
 
@@ -334,7 +347,8 @@ router.post("/", auth, upload.single("image"), (async (req: any, res) => {
       location: location.trim(),
       description: description ? description.trim() : undefined,
       categoryIds: parsedCategoryIds,
-      imageUrl: req.file ? (req.file as any).location : undefined,
+      // multer-s3 provides the full S3 URL in req.file.location
+      imageUrl: req.file ? req.file.location : undefined,
       createdBy: req.user.userId,
       createdByName: user.name,
     });
@@ -342,9 +356,8 @@ router.post("/", auth, upload.single("image"), (async (req: any, res) => {
     await event.save();
     const populated = await event.populate("categoryIds");
     res.status(201).json(populated);
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error creating event:", error);
-    console.error("STACK:", error.stack);
     res.status(500).json({ error: "Failed to create event" });
   }
 }) as RequestHandler);
@@ -352,64 +365,82 @@ router.post("/", auth, upload.single("image"), (async (req: any, res) => {
 // PUT /events/:id - Update an existing event (authenticated, only by creator)
 router.put("/:id", auth, upload.single("image"), (async (req: any, res) => {
   try {
-    const eventId = req.params.id;
+    const { id } = req.params;
+    const { title, date, location, description, categoryIds, removeImage } =
+      req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ error: "Invalid event ID" });
     }
 
-    const event = await Event.findById(eventId);
+    const event = await Event.findById(id);
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
     }
 
-    // Optional: only allow the owner to update
-    if (event.createdBy.toString() !== req.user.userId) {
-      return res.status(403).json({ error: "Unauthorized" });
+    // Check if the user is the creator of the event or an admin
+    if (
+      event.createdBy &&
+      event.createdBy.toString() !== req.user.userId &&
+      req.user.role !== "admin"
+    ) {
+      return res
+        .status(403)
+        .json({ error: "You can only edit events that you created" });
     }
 
-    // Update fields
-    const { title, date, location, description, categoryIds } = req.body;
-
-    if (title) event.title = title.trim();
-    if (date) event.date = date;
-    if (location) event.location = location.trim();
-    if (description) event.description = description.trim();
-
+    let parsedCategoryIds: mongoose.Types.ObjectId[] = [];
     if (categoryIds) {
-      const parsed = JSON.parse(categoryIds);
-      if (!Array.isArray(parsed)) {
-        return res.status(400).json({ error: "categoryIds must be an array" });
-      }
-      event.categoryIds = parsed.map(
-        (id: string) => new mongoose.Types.ObjectId(id)
-      );
-    }
-
-    // Handle image replacement
-    if (req.file) {
-      // Optional: delete old image from S3
-      if (event.imageUrl && process.env.AWS_BUCKET_NAME) {
-        const key = event.imageUrl.split("/").pop(); // assumes flat storage
-        try {
-          await s3.send(
-            new DeleteObjectCommand({
-              Bucket: process.env.AWS_BUCKET_NAME,
-              Key: key,
-            })
-          );
-        } catch (err) {
-          console.warn("Failed to delete old image:", err);
+      try {
+        const arr = JSON.parse(categoryIds);
+        if (!Array.isArray(arr)) {
+          return res
+            .status(400)
+            .json({ error: "categoryIds must be an array" });
         }
+        // Validate each category ID
+        for (const id of arr) {
+          if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res
+              .status(400)
+              .json({ error: `Invalid category ID: ${id}` });
+          }
+        }
+        parsedCategoryIds = arr.map((id) => new mongoose.Types.ObjectId(id));
+      } catch (error) {
+        return res.status(400).json({
+          error:
+            "Invalid categoryIds format. Must be a JSON array of valid MongoDB ObjectIds.",
+        });
       }
-
-      // Save new image URL
-      event.imageUrl = (req.file as any).location;
     }
+
+    // Handle image operations
+    const shouldRemoveImage = removeImage === "true" || removeImage === true;
+
+    // If a new image is uploaded or we want to remove the current image, delete the old one from S3
+    if ((req.file || shouldRemoveImage) && event.imageUrl) {
+      await deleteImageFile(event.imageUrl);
+    }
+
+    event.title = title.trim();
+    event.date = date;
+    event.location = location.trim();
+    event.description = description ? description.trim() : undefined;
+    event.categoryIds = parsedCategoryIds;
+
+    // Update image URL based on the operation
+    if (req.file) {
+      // multer-s3 provides the full S3 URL in req.file.location
+      event.imageUrl = req.file.location;
+    } else if (shouldRemoveImage) {
+      event.imageUrl = undefined;
+    }
+    // If neither new image nor remove image, keep the existing imageUrl
 
     await event.save();
     const populated = await event.populate("categoryIds");
-    res.json(populated);
+    res.status(200).json(populated);
   } catch (error) {
     console.error("Error updating event:", error);
     res.status(500).json({ error: "Failed to update event" });
@@ -442,7 +473,7 @@ router.delete("/:id", auth, (async (req: any, res) => {
         .json({ error: "You can only delete events that you created" });
     }
 
-    // Delete the image file if it exists
+    // Delete the image file from S3 if it exists
     if (event.imageUrl) {
       await deleteImageFile(event.imageUrl);
     }

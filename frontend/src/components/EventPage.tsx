@@ -337,7 +337,7 @@ const EventPage: React.FC = () => {
               {event.imageUrl && (
                 <div className="event-image-wrapper">
                   <img
-                    src={`${apiUrl}${event.imageUrl}`}
+                    src={`${event.imageUrl}`}
                     alt={event.title}
                     className="event-image-large"
                   />
