@@ -52,6 +52,20 @@ app.get("/ping", (_req, res) => {
   res.send("pong");
 });
 
+app.get("/", (_req, res) => {
+  res.send(`
+    <html>
+      <head><title>Community Events Board API</title></head>
+      <body style="font-family: sans-serif; text-align: center; padding: 2rem;">
+        <h1>🎉 Community Events Board API</h1>
+        <p>This is the backend server.</p>
+        <p>View the API: <a href="/events">/events</a></p>
+        <p>Visit the frontend: <a href="https://main.d1r03isbgzcqje.amplifyapp.com" target="_blank">Frontend Website</a></p>
+      </body>
+    </html>
+  `);
+});
+
 // Only start server if not being imported for tests
 if (require.main === module) {
   server.listen(PORT, () => {
