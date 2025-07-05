@@ -9,7 +9,7 @@ interface SearchBarProps {
 
 const SearchBar: React.FC<SearchBarProps> = ({
   onSearch,
-  placeholder = "Search events by title, description, or location...",
+  placeholder = "Search by title, description, or location...",
   initialValue = "",
   loading = false,
 }) => {

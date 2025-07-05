@@ -477,26 +477,6 @@ function AppContent() {
 
         {/* Main Content: Events */}
         <main className="main-content">
-          <div className="content-header">
-            <div className="results-info">
-              {!loading && (
-                <span className="results-count">
-                  {pagination.totalEvents === 0
-                    ? "No events found"
-                    : `${pagination.totalEvents} event${
-                        pagination.totalEvents !== 1 ? "s" : ""
-                      } found`}
-                  {(searchTerm || hasActiveFilters) && (
-                    <span className="filter-indicator">
-                      {searchTerm && ` matching "${searchTerm}"`}
-                      {hasActiveFilters && " with filters applied"}
-                    </span>
-                  )}
-                </span>
-              )}
-            </div>
-          </div>
-
           <div className="events-container">
             {loading && (
               <div className="loading-state">
@@ -523,6 +503,25 @@ function AppContent() {
             {!loading && !error && events.length > 0 && (
               <EventList events={events} onEventUpdated={handleEventAdded} />
             )}
+          </div>
+          <div className="content-footer">
+            <div className="results-info">
+              {!loading && (
+                <span className="results-count">
+                  {pagination.totalEvents === 0
+                    ? "No events found"
+                    : `${pagination.totalEvents} event${
+                        pagination.totalEvents !== 1 ? "s" : ""
+                      } found`}
+                  {(searchTerm || hasActiveFilters) && (
+                    <span className="filter-indicator">
+                      {searchTerm && ` matching "${searchTerm}"`}
+                      {hasActiveFilters && " with filters applied"}
+                    </span>
+                  )}
+                </span>
+              )}
+            </div>
           </div>
         </main>
       </div>
