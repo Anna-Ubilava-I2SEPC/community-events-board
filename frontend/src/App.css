@@ -78,7 +78,7 @@ h1 {
   margin: 0 auto;
 }
 
-form {
+form:not(.search-form) {
   background: #fff;
   padding: 2rem;
   border-radius: 12px;
@@ -132,7 +132,7 @@ textarea {
   margin-top: 2rem;
 }
 
-button {
+button:not(.search-button):not(.clear-search-button) {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   background-color: #2b3a55;
@@ -1011,14 +1011,25 @@ form,
 }
 
 /* Search Bar Styles */
+
+.search-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-input-wrapper {
+  position: relative;
+  flex: 1;
+}
+
 .search-input {
   width: 100%;
-  padding: 1rem;
-  font-size: 1rem;
-  border: 2px solid #e1e5e9;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  border: 1px solid #ccc;
   border-radius: 8px;
-  transition: all 0.2s ease;
-  background: #fff;
+  font-size: 1rem;
+  margin: 0px;
 }
 
 .search-input:focus {
@@ -1027,6 +1038,43 @@ form,
   box-shadow: 0 0 0 3px rgba(43, 58, 85, 0.1);
 }
 
+.clear-search-button {
+  position: absolute;
+  top: 25%;
+  right: 0.75rem;
+  background: transparent;
+  color: #e2e2e2;
+  border: none;
+  border-radius: 8px;
+  width: 24px;
+  height: 24px;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+.clear-search-button:hover {
+  background: #ccc;
+}
+
+.search-button {
+  padding: 0.75rem 1.2rem;
+  font-size: 1rem;
+  background-color: #1e2a47;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  transition: background 0.2s ease;
+}
+
+.search-button:hover {
+  background-color: #162033;
+}
 /* Filter and Sort Components */
 .filter-section,
 .sort-section {

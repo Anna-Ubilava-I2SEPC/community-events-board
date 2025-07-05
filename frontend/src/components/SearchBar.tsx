@@ -33,34 +33,33 @@ const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   return (
-    <div className="search-bar">
-      <form onSubmit={handleSubmit} className="search-form">
-        <div className="search-input-wrapper">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={handleInputChange}
-            placeholder={placeholder}
-            className="search-input"
+    <form onSubmit={handleSubmit} className="search-form">
+      <div className="search-input-wrapper">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={handleInputChange}
+          placeholder={placeholder}
+          className="search-input"
+          disabled={loading}
+        />
+        {searchTerm && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="clear-search-button"
             disabled={loading}
-          />
-          {searchTerm && (
-            <button
-              type="button"
-              onClick={handleClear}
-              className="clear-search-button"
-              disabled={loading}
-              aria-label="Clear search"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-        <button type="submit" className="search-button" disabled={loading}>
-          {loading ? "🔄" : "🔍"} Search
-        </button>
-      </form>
-    </div>
+            aria-label="Clear search"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
+      <button type="submit" className="search-button" disabled={loading}>
+        {loading ? "🔄" : "🔍"} Search
+      </button>
+    </form>
   );
 };
 
